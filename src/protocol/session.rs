@@ -504,7 +504,7 @@ impl Spdu {
 
     fn decode_param(buf: &mut impl Buf) -> Result<(ParamId, Bytes), Error> {
         let param = ParamId::try_from(buf.try_get_u8()?).map_err(proto_err)?;
-        let len = Spdu::decode_len(buf)? as usize;
+        let len = Spdu::decode_len(buf)?;
 
         if buf.remaining() < len {
             return Err(Error::ProtocolError(format!(
@@ -644,21 +644,12 @@ impl Spdu {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct SessionParams {
     /// Sender's session address provided by SS-user
     pub local_session_selector: Option<Bytes>,
     /// Recipient's session address provided by SS-user
     pub remote_session_selector: Option<Bytes>,
-}
-
-impl Default for SessionParams {
-    fn default() -> Self {
-        Self {
-            local_session_selector: None,
-            remote_session_selector: None,
-        }
-    }
 }
 
 /// Map a `num_enum::TryFromPrimitiveError` to the universal `Error` type.

@@ -115,7 +115,7 @@ pub fn encode(mpdu: &MMSpdu, pp: &ProtocolParams) -> Result<Bytes, Error> {
             trace!("session: encode data transfer (GT + DT)");
 
             // Encode ISO-8823 Presentation layer with ISO-9506 MMS as user data
-            presentation::Ppdu::encode_data_mms(&pp.presentation, &mpdu, &mut buf)?;
+            presentation::Ppdu::encode_data_mms(&pp.presentation, mpdu, &mut buf)?;
 
             trace!(
                 "presentation: encode user-data, context {} (MMS)",
@@ -148,8 +148,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
 
             buf = params
                 .user_data
-                .ok_or(Error::ProtocolError("Session: expect user data in Connect SPDU".into()))?
-                .into();
+                .ok_or(Error::ProtocolError("Session: expect user data in Connect SPDU".into()))?;
 
             // Decode ISO-8823 Presentation layer
             let (p, apdu) = presentation::Ppdu::decode_connect(&mut buf)?;
@@ -184,8 +183,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
 
             buf = params
                 .user_data
-                .ok_or(Error::ProtocolError("Session: expect user data in Accept SPDU".into()))?
-                .into();
+                .ok_or(Error::ProtocolError("Session: expect user data in Accept SPDU".into()))?;
 
             // Decode ISO-8823 Presentation layer
             let apdu = presentation::Ppdu::decode_connect_accept(&pp.presentation, &mut buf)?;
@@ -209,12 +207,9 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
         session::Spdu::Disconnect(params) => {
             trace!("session: decode disconnect (DN)");
 
-            buf = params
-                .user_data
-                .ok_or(Error::ProtocolError(
-                    "Session: expect user data in Disconnect SPDU".into(),
-                ))?
-                .into();
+            buf = params.user_data.ok_or(Error::ProtocolError(
+                "Session: expect user data in Disconnect SPDU".into(),
+            ))?;
 
             // Decode ISO-8823 Presentation layer
             let apdu = presentation::Ppdu::decode_data_acse(&pp.presentation, &mut buf)?;
@@ -237,8 +232,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
 
             buf = params
                 .user_data
-                .ok_or(Error::ProtocolError("Session: expect user data in Finish SPDU".into()))?
-                .into();
+                .ok_or(Error::ProtocolError("Session: expect user data in Finish SPDU".into()))?;
 
             // Decode ISO-8823 Presentation layer
             let apdu = presentation::Ppdu::decode_data_acse(&pp.presentation, &mut buf)?;
@@ -261,8 +255,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
 
             buf = params
                 .user_data
-                .ok_or(Error::ProtocolError("Session: expect user data in Abort SPDU".into()))?
-                .into();
+                .ok_or(Error::ProtocolError("Session: expect user data in Abort SPDU".into()))?;
 
             // Decode ISO-8823 Presentation layer
             let apdu = presentation::Ppdu::decode_abort_user(&pp.presentation, &mut buf)?;
@@ -341,7 +334,7 @@ where
         let in_decoded = stream.map(move |frame| decode(frame?, &mut in_params.lock().unwrap()));
 
         // Convert `futures::mpsc::SendError` to `Error`
-        let mut tx = in_tx.sink_map_err(|e| Error::from(e));
+        let mut tx = in_tx.sink_map_err(Error::from);
 
         // channel <- socket
         let from_socket = in_decoded.forward(&mut tx);

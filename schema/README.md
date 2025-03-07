@@ -1,6 +1,6 @@
-## Source ASN.1 Schema
+# Source ASN.1 Schema
 
-https://www.iso.org/committee/54192.html?view=documents --> _ISO 9506 (MMS) ASN.1 Modules_ --> _MMS_
+<https://www.iso.org/committee/54192.html?view=documents> --> _ISO 9506 (MMS) ASN.1 Modules_ --> _MMS_
 
 ## `rasn` Compiler Errata
 

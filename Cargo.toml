@@ -23,7 +23,6 @@ thiserror.workspace = true
 futures.workspace = true
 tokio.workspace = true
 tokio-rustls.workspace = true
-tokio-stream.workspace = true
 tokio-util.workspace = true
 rustls.workspace = true
 rustls-pki-types.workspace = true

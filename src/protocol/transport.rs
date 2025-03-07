@@ -505,9 +505,9 @@ where
                 none @ Poll::Ready(None) => {
                     if !self.stream_buf.is_empty() {
                         self.stream_buf.clear();
-                        return Poll::Ready(Some(Err(Error::ProtocolError(format!(
-                            "Transport: stream closed during data transfer"
-                        )))));
+                        return Poll::Ready(Some(Err(Error::ProtocolError(
+                            "Transport: stream closed during data transfer".to_string(),
+                        ))));
                     }
 
                     return none;

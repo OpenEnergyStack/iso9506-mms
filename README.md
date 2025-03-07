@@ -6,6 +6,7 @@
 MMS was originally developed on top of the OSI seven layer network model, then adapted for use with TCP/IP, while retaining the original Transport, Session, Presentation, and ACSE layers. Each of these layers defines its own protocol primitives, encoding, and state machine. Because these protocol layers are no longer widely used, the MMS application layer is responsible for their implementation.
 
 The following protocol layers are in use in common MMS implementations:
+
 * Transport Service on top of TCP - ISO-8072, RFC-1006
 * Transport Protocol - ISO-8073, RFC-905
 * Session Protocol - ISO-8327, X.225

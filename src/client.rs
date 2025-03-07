@@ -547,14 +547,14 @@ mod tests {
 
     fn make_resp_pdu(invoke_id: Unsigned32, resp: ConfirmedServiceResponse) -> MMSpdu {
         MMSpdu::confirmed_ResponsePDU(ConfirmedResponsePDU {
-            invoke_id: invoke_id,
+            invoke_id,
             service: resp,
         })
     }
 
     fn make_err_pdu(invoke_id: Unsigned32, err: ServiceError) -> MMSpdu {
         MMSpdu::confirmed_ErrorPDU(ConfirmedErrorPDU {
-            invoke_id: invoke_id,
+            invoke_id,
             modifier_position: None,
             service_error: err,
         })
@@ -606,7 +606,7 @@ mod tests {
     #[tokio::test]
     async fn multi_request() {
         const NUM_REQS: u32 = 100;
-        let reqs: Vec<ConfirmedServiceRequest> = (0..NUM_REQS).map(|id| make_req(id)).collect();
+        let reqs: Vec<ConfirmedServiceRequest> = (0..NUM_REQS).map(make_req).collect();
 
         // Channel
         let (out_tx, mut out_rx) = futures::channel::mpsc::channel(10);
@@ -1105,7 +1105,7 @@ mod tests {
                 .timeout_after(Duration::from_secs(1))
                 .connect(server.addr.ip().to_string(), server.addr.port())
                 .await
-                .expect(format!("client TCP connect to {}", server.addr).as_str());
+                .unwrap_or_else(|_| panic!("client TCP connect to {}", server.addr));
 
             assert!(client.is_connected());
 

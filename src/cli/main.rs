@@ -115,19 +115,47 @@ struct ReadListArgs {
 /// Variable Data for writing
 #[derive(Clone, Subcommand)]
 enum WriteData {
-    Bool { val: bool },
-    BitString { val: Vec<u8> },
-    Integer { val: isize },
-    Unsigned { val: usize },
-    Float { val: f64 },
-    Bytes { val: Vec<u8> },
-    String { val: String },
-    GeneralizedTime { val: chrono::DateTime<chrono::FixedOffset> },
-    BinaryTime { val: Vec<u8> },
-    BCD { val: isize },
-    BoolArray { val: Vec<u8> },
-    OID { val: String },
-    MMSString { val: String },
+    Bool {
+        val: bool,
+    },
+    BitString {
+        val: Vec<u8>,
+    },
+    Integer {
+        val: isize,
+    },
+    Unsigned {
+        val: usize,
+    },
+    Float {
+        val: f64,
+    },
+    Bytes {
+        val: Vec<u8>,
+    },
+    String {
+        val: String,
+    },
+    GeneralizedTime {
+        val: chrono::DateTime<chrono::FixedOffset>,
+    },
+    BinaryTime {
+        val: Vec<u8>,
+    },
+    #[allow(clippy::upper_case_acronyms)]
+    BCD {
+        val: isize,
+    },
+    BoolArray {
+        val: Vec<u8>,
+    },
+    #[allow(clippy::upper_case_acronyms)]
+    OID {
+        val: String,
+    },
+    MMSString {
+        val: String,
+    },
 }
 
 /// 'Write' arguments
@@ -218,7 +246,7 @@ fn print_data(data: &Data, indent: usize, annotate_types: bool) {
         print!("  [{data_type}]");
     }
 
-    println!("");
+    println!();
 }
 
 #[tokio::main]

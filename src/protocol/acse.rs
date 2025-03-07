@@ -56,7 +56,7 @@ impl Apdu {
             p_context_definition_list: None,
             called_asoi_tag: None,
             calling_asoi_tag: None,
-            user_information: Some(Apdu::pack_association_data(&presentation_context_id, &mpdu)?),
+            user_information: Some(Apdu::pack_association_data(presentation_context_id, &mpdu)?),
         });
 
         Ok(apdu)
@@ -123,7 +123,7 @@ impl Apdu {
             p_context_result_list: None,
             called_asoi_tag: None,
             calling_asoi_tag: None,
-            user_information: Some(Apdu::pack_association_data(&presentation_context_id, &mpdu)?),
+            user_information: Some(Apdu::pack_association_data(presentation_context_id, &mpdu)?),
         });
 
         Ok(apdu)
