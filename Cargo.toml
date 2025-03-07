@@ -1,0 +1,38 @@
+[package]
+name = "mms"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "mms-client"
+path = "src/cli/main.rs"
+
+[dependencies]
+bitvec.workspace = true
+bytes.workspace = true
+chrono.workspace = true
+clap.workspace = true
+env_logger.workspace = true
+lazy_static.workspace = true
+num_enum.workspace = true
+log.workspace = true
+rasn.workspace = true
+rand.workspace = true
+thiserror.workspace = true
+futures.workspace = true
+tokio.workspace = true
+tokio-rustls.workspace = true
+tokio-stream.workspace = true
+tokio-util.workspace = true
+rustls.workspace = true
+rustls-pki-types.workspace = true
+
+[dev-dependencies]
+hex.workspace = true
+
+[build-dependencies]
+rasn-compiler.workspace = true
+
+[features]
+tls = []

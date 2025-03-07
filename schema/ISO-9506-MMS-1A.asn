@@ -1,0 +1,113 @@
+-- Modified for compatibility with rasn-compiler
+
+ISO-9506-MMS-1A
+{ iso standard 9506 part(2) mms-annex-version1(3) }
+DEFINITIONS ::= BEGIN
+
+IMPORTS
+   FileName,
+   ObjectName,
+   AlternateAccess,
+   VariableSpecification,
+   Identifier,
+   Integer32,
+   Unsigned32
+FROM ISO-9506-MMS-1 { iso standard 9506 part(2) mms-abstract-syntax-version1(1) }
+
+   ApplicationReference
+FROM MMS-Environment-1 { iso standard 9506 part(2) mms-environment-version1 (4) }
+;
+
+-- Productions
+
+ObtainFile-Error ::= INTEGER {
+   source-file(0),
+   destination-file(1)
+} (0..1)
+
+FileRename-Error ::= INTEGER {
+   source-file(0),
+   destination-file(1)
+} (0..1)
+
+ScatteredAccessDescription ::= SEQUENCE OF SEQUENCE {
+   componentName [0] IMPLICIT Identifier OPTIONAL,
+   variableSpecification [1] VariableSpecification,
+   alternateAccess [2] IMPLICIT AlternateAccess OPTIONAL
+}
+
+DefineScatteredAccess-Request ::= SEQUENCE {
+   scatteredAccessName [0] ObjectName,
+   scatteredAccessDescription [1] IMPLICIT ScatteredAccessDescription
+}
+
+GetScatteredAccessAttributes-Request ::= ObjectName
+
+ObtainFile-Request ::= SEQUENCE {
+   sourceFileServer [0] IMPLICIT ApplicationReference OPTIONAL,
+   sourceFile [1] IMPLICIT FileName,
+   destinationFile [2] IMPLICIT FileName
+}
+
+FileOpen-Request ::= SEQUENCE {
+   fileName [0] IMPLICIT FileName,
+   initialPosition [1] IMPLICIT Unsigned32
+}
+
+FileRead-Request ::= Integer32
+
+FileClose-Request ::= Integer32
+
+FileRename-Request ::= SEQUENCE {
+   currentFileName [0] IMPLICIT FileName,
+   newFileName [1] IMPLICIT FileName
+}
+
+FileDelete-Request ::= FileName
+
+FileDirectory-Request ::= SEQUENCE {
+   fileSpecification [0] IMPLICIT FileName OPTIONAL,
+   continueAfter [1] IMPLICIT FileName OPTIONAL
+}
+
+DefineScatteredAccess-Response ::= NULL
+
+GetScatteredAccessAttributes-Response ::= SEQUENCE {
+   mmsDeletable [0] IMPLICIT BOOLEAN,
+   scatteredAccessDescription [1] IMPLICIT ScatteredAccessDescription
+}
+
+ObtainFile-Response ::= NULL
+
+FileAttributes ::= SEQUENCE {
+   sizeOfFile [0] IMPLICIT Unsigned32,
+   lastModified [1] IMPLICIT GeneralizedTime OPTIONAL
+}
+
+FileOpen-Response ::= SEQUENCE {
+   frsmID [0] IMPLICIT Integer32,
+   fileAttributes [1] IMPLICIT FileAttributes
+}
+
+FileRead-Response ::= SEQUENCE {
+   fileData [0] IMPLICIT OCTET STRING,
+   moreFollows [1] IMPLICIT BOOLEAN DEFAULT TRUE
+}
+
+FileClose-Response ::= NULL
+
+FileRename-Response ::= NULL
+
+FileDelete-Response ::= NULL
+
+DirectoryEntry ::= SEQUENCE {
+   fileName [0] IMPLICIT FileName,
+   fileAttributes [1] IMPLICIT FileAttributes
+}
+
+FileDirectory-Response ::= SEQUENCE {
+   listOfDirectoryEntry [0] SEQUENCE OF DirectoryEntry,
+   moreFollows [1] IMPLICIT BOOLEAN DEFAULT FALSE
+}
+
+END

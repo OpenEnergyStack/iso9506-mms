@@ -1,0 +1,314 @@
+-- Modified for compatibility with rasn-compiler
+
+MMS-Object-Module-1
+{ iso standard 9506 part(1) mms-object-model-version1(2) }
+DEFINITIONS ::= BEGIN
+
+IMPORTS
+   ApplicationReference
+FROM MMS-Environment-1 { iso standard 9506 part(2) mms-environment-version1(4) }
+
+   AlternateAccess,
+   ConfirmedServiceRequest,
+   AttachToSemaphore,
+   AttachToEventCondition,
+   Data,
+   EE-State,
+   Identifier,
+   Integer8,
+   Integer32,
+   MMSString,
+   MMS255String,
+   ObjectName,
+   TimeOfDay,
+   TypeSpecification,
+   Unsigned32,
+   Unsigned8
+FROM ISO-9506-MMS-1 { iso standard 9506 part(2) mms-abstract-syntax-version1(1) }
+;
+
+-- Productions
+
+LogicalStatus ::= [0] IMPLICIT INTEGER {
+   state-changes-allowed(0),
+   no-state-changes-allowed(1),
+   limited-services-permitted(2),
+   support-services-allowed(3)
+} (0..3)
+
+PhysicalStatus ::= [1] IMPLICIT INTEGER {
+   operational(0),
+   partially-operational(1),
+   inoperable(2),
+   needs-commissioning(3)
+} (0..3)
+
+VMDState ::= INTEGER {
+   idle(0),
+   loaded(1),
+   ready(2),
+   executing(3),
+   motion-paused(4),
+   manualInterventionRequired(5)
+} (0..5)
+
+ServiceSupportOptions ::= BIT STRING {
+   status(0),
+   getNameList(1),
+   identify(2),
+   rename(3),
+   read(4),
+   write(5),
+   getVariableAccessAttributes(6),
+   defineNamedVariable(7),
+   defineScatteredAccess(8),
+   getScatteredAccessAttributes(9),
+   deleteVariableAccess(10),
+   defineNamedVariableList(11),
+   getNamedVariableListAttributes(12),
+   deleteNamedVariableList(13),
+   defineNamedType(14),
+   getNamedTypeAttributes(15),
+   deleteNamedType(16),
+   input(17),
+   output(18),
+   takeControl(19),
+   relinquishControl(20),
+   defineSemaphore(21),
+   deleteSemaphore(22),
+   reportSemaphoreStatus(23),
+   reportPoolSemaphoreStatus(24),
+   reportSemaphoreEntryStatus(25),
+   initiateDownloadSequence(26),
+   downloadSegment(27),
+   terminateDownloadSequence(28),
+   initiateUploadSequence(29),
+   uploadSegment(30),
+   terminateUploadSequence(31),
+   requestDomainDownload(32),
+   requestDomainUpload(33),
+   loadDomainContent(34),
+   storeDomainContent(35),
+   deleteDomain(36),
+   getDomainAttributes(37),
+   createProgramInvocation(38),
+   deleteProgramInvocation(39),
+   start(40),
+   stop(41),
+   resume(42),
+   reset(43),
+   kill(44),
+   getProgramInvocationAttributes(45),
+   obtainFile(46),
+   defineEventCondition(47),
+   deleteEventCondition(48),
+   getEventConditionAttributes(49),
+   reportEventConditionStatus(50),
+   alterEventConditionMonitoring(51),
+   triggerEvent(52),
+   defineEventAction(53),
+   deleteEventAction(54),
+   getEventActionAttributes(55),
+   reportEventActionStatus(56),
+   defineEventEnrollment(57),
+   deleteEventEnrollment(58),
+   alterEventEnrollment(59),
+   reportEventEnrollmentStatus(60),
+   getEventEnrollmentAttributes(61),
+   acknowledgeEventNotification(62),
+   getAlarmSummary(63),
+   getAlarmEnrollmentSummary(64),
+   readJournal(65),
+   writeJournal(66),
+   initializeJournal(67),
+   reportJournalStatus(68),
+   createJournal(69),
+   deleteJournal(70),
+   getCapabilityList(71),
+   fileOpen(72),
+   fileRead(73),
+   fileClose(74),
+   fileRename(75),
+   fileDelete(76),
+   fileDirectory(77),
+   unsolicitedStatus(78),
+   informationReport(79),
+   eventNotification(80),
+   attachToEventCondition(81),
+   attachToSemaphore(82),
+   conclude(83),
+   cancel(84)
+} (SIZE (85))
+
+ParameterSupportOptions ::= BIT STRING {
+   str1(0),
+   str2(1),
+   vnam(2),
+   valt(3),
+   vadr(4),
+   vsca(5),
+   tpy(6),
+   vlis(7),
+   cei(10)
+} (SIZE (11))
+
+DomainState ::= INTEGER {
+   non-existent(0),
+   loading(1),
+   ready(2),
+   in-use(3),
+   complete(4),
+   incomplete(5),
+   d1(7),
+   d2(8),
+   d3(9),
+   d4(10),
+   d5(11),
+   d6(12),
+   d7(13),
+   d8(14),
+   d9(15)
+} (0..15)
+
+ULState ::= INTEGER {
+   non-existent(0),
+   uploading(1),
+   uploaded(2),
+   u1(3),
+   u2(4),
+   u3(5),
+   u4(6)
+} (0..6)
+
+ProgramInvocationState ::= INTEGER {
+   non-existent(0),
+   unrunnable(1),
+   idle(2),
+   running(3),
+   stopped(4),
+   starting(5),
+   stopping(6),
+   resuming(7),
+   resetting(8)
+} (0..8)
+
+Control-State ::= INTEGER {
+   normal(0),
+   controlling(1),
+   controlled(2)
+} (0..2)
+
+Running-Mode ::= INTEGER {
+   free-run(0),
+   cycle-limited(1),
+   step-limited(2)
+} (0..2)
+
+Priority ::= INTEGER (0..127)
+
+EC-Class ::= INTEGER {
+   network-triggered(0),
+   monitored(1)
+} (0..1)
+
+EC-State ::= INTEGER {
+   disabled(0),
+   idle(1),
+   active(2)
+} (0..2)
+
+Severity ::= INTEGER (0..127)
+
+EE-Class ::= INTEGER {
+   modifier(0),
+   notification(1)
+} (0..1)
+
+Transitions ::= BIT STRING {
+   idle-to-disabled(0),
+   active-to-disabled(1),
+   disabled-to-idle(2),
+   active-to-idle(3),
+   disabled-to-active(4),
+   idle-to-active(5),
+   any-to-deleted(6)
+} (SIZE (7))
+
+EE-Duration ::= INTEGER {
+   current(0),
+   permanent(1)
+} (0..1)
+
+AlarmAckRule ::= INTEGER {
+   none(0),
+   simple(1),
+   ack-active(2),
+   ack-all(3)
+} (0..3)
+
+Modifier ::= CHOICE {
+   eventModifier [0] IMPLICIT AttachToEventCondition,
+   semaphoreModifier [1] IMPLICIT AttachToSemaphore
+}
+
+ModifierStep ::= SEQUENCE {
+   modifierID INTEGER,
+   modifier Modifier
+}
+
+Address ::= CHOICE {
+   numericAddress [0] IMPLICIT Unsigned32,
+   symbolicAddress [1] MMSString,
+   unconstrainedAddress [2] IMPLICIT OCTET STRING
+}
+
+TypeDescription ::= CHOICE {
+   array [1] IMPLICIT SEQUENCE {
+      packed [0] IMPLICIT BOOLEAN DEFAULT FALSE,
+      numberOfElements [1] IMPLICIT Unsigned32,
+      elementType [2] TypeSpecification
+   },
+   structure [2] IMPLICIT SEQUENCE {
+      packed [0] IMPLICIT BOOLEAN DEFAULT FALSE,
+      components [1] IMPLICIT SEQUENCE OF SEQUENCE {
+         componentName [0] IMPLICIT Identifier OPTIONAL,
+         componentType [1] TypeSpecification
+      }
+   },
+   boolean [3] IMPLICIT NULL,
+   bit-string [4] IMPLICIT Integer32,
+   integer [5] IMPLICIT Unsigned8,
+   unsigned [6] IMPLICIT Unsigned8,
+   floating-point [7] IMPLICIT SEQUENCE {
+      format-width Unsigned8,
+      exponent-width Unsigned8
+   },
+   octet-string [9] IMPLICIT Integer32,
+   visible-string [10] IMPLICIT Integer32,
+   generalized-time [11] IMPLICIT NULL,
+   binary-time [12] IMPLICIT BOOLEAN,
+   bcd [13] IMPLICIT Unsigned8,
+   objId [15] IMPLICIT NULL,
+   ...,
+   mMSString [16] Integer32
+}
+
+EventTime ::= CHOICE {
+   timeOfDay [0] IMPLICIT TimeOfDay,
+   timeSequenceIdentifier [1] IMPLICIT Unsigned32,
+   undefined [2] IMPLICIT NULL
+}
+
+Journal-Variable ::= SEQUENCE {
+   variableTag MMS255String,
+   valueSpecification Data
+}
+
+-- Value assignments
+
+normalPriority Priority ::= 64
+normalSeverity Severity ::= 64
+mMSNamedVariable OBJECT IDENTIFIER ::= { iso(1) standard(0) 9506 part(1) symbols-version1(5) named-variable(1) }
+mMSAccessControlList OBJECT IDENTIFIER ::= { iso(1) standard(0) 9506 part(1) symbols-version1(5) access-control-list(2) }
+mMSEventCondition OBJECT IDENTIFIER ::= { iso(1) standard(0) 9506 part(1) symbols-version1(5) event-condition(3) }
+END

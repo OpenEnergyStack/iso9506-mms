@@ -1,0 +1,24 @@
+-- Modified for compatibility with rasn-compiler
+
+MMS-Environment-1
+{ iso standard 9506 part(2) mms-environment-version1(4) }
+DEFINITIONS ::= BEGIN
+
+IMPORTS
+   AP-title,
+   AP-invocation-identifier,
+   AE-qualifier,
+   AE-invocation-identifier
+FROM ACSE-1 { joint-iso-itu-t association-control(2) modules(0) apdus(0) version1(1) }
+;
+
+-- Productions
+
+ApplicationReference ::= SEQUENCE {
+   ap-title [0] AP-title OPTIONAL,
+   ap-invocation-id [1] AP-invocation-identifier OPTIONAL,
+   ae-qualifier [2] AE-qualifier OPTIONAL,
+   ae-invocation-id [3] AE-invocation-identifier OPTIONAL
+}
+
+END

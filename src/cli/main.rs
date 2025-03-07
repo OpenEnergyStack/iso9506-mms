@@ -1,0 +1,385 @@
+//! MMS command line client
+
+use clap::{Args, Parser, Subcommand};
+use mms::{client::*, *};
+
+/// Command line arguments
+#[derive(Parser)]
+#[clap(name = "mms-client")]
+struct Cli {
+    /// Enable debug logging
+    #[arg(long, default_value = "false")]
+    debug: bool,
+
+    /// Server hostname or IP address
+    host: String,
+
+    /// Server port
+    #[arg(short, long, default_value = "102")]
+    port: u16,
+
+    /// Operation
+    #[clap(subcommand)]
+    command: Commands,
+}
+
+/// Primary operation
+#[derive(Subcommand)]
+enum Commands {
+    /// Identify
+    Identify,
+    /// Get Name List
+    List(ListArgs),
+    /// Read variable(s)
+    Read(ReadArgs),
+    /// Read a variable list
+    ReadList(ReadListArgs),
+    /// Write variable
+    Write(WriteArgs),
+}
+
+/// Object Class
+#[derive(Subcommand)]
+#[repr(u8)]
+enum ListType {
+    /// Named variables
+    Variable = ObjectClassValue::NamedVariable as u8,
+    /// Scattered access
+    ScatteredAccess = ObjectClassValue::ScatteredAccess as u8,
+    /// Named variable lists
+    VariableList = ObjectClassValue::NamedVariableList as u8,
+    /// Named types
+    Type = ObjectClassValue::NamedType as u8,
+    /// Semaphores
+    Semaphore = ObjectClassValue::Semaphore as u8,
+    /// Event conditions
+    EventCondition = ObjectClassValue::EventCondition as u8,
+    /// Event actions
+    EventAction = ObjectClassValue::EventAction as u8,
+    /// Event enrollments
+    EventEnrollment = ObjectClassValue::EventEnrollment as u8,
+    /// Journals
+    Journal = ObjectClassValue::Journal as u8,
+    /// Domains
+    Domain = ObjectClassValue::Domain as u8,
+    /// Program invocations
+    Program = ObjectClassValue::ProgramInvocation as u8,
+    /// Operator stations
+    Station = ObjectClassValue::OperatorStation as u8,
+}
+
+/// 'List' arguments
+#[derive(Args)]
+struct ListArgs {
+    /// Specify a domain scope for the object
+    #[clap(short, long)]
+    domain: Option<String>,
+
+    /// Object class
+    #[clap(subcommand)]
+    class: ListType,
+}
+
+/// 'Read' arguments
+#[derive(Args)]
+struct ReadArgs {
+    /// Specify a domain scope for the object
+    #[clap(short, long)]
+    domain: Option<String>,
+
+    /// Print data types
+    #[clap(short, long)]
+    types: bool,
+
+    /// Variable names
+    #[arg(required = true)]
+    names: Vec<String>,
+}
+
+/// 'ReadList' arguments
+#[derive(Args)]
+struct ReadListArgs {
+    /// Specify a domain scope for the object
+    #[clap(short, long)]
+    domain: Option<String>,
+
+    /// Output data types
+    #[clap(short, long)]
+    types: bool,
+
+    /// Variable list name
+    #[arg(required = true)]
+    name: String,
+}
+
+/// Variable Data for writing
+#[derive(Clone, Subcommand)]
+enum WriteData {
+    Bool { val: bool },
+    BitString { val: Vec<u8> },
+    Integer { val: isize },
+    Unsigned { val: usize },
+    Float { val: f64 },
+    Bytes { val: Vec<u8> },
+    String { val: String },
+    GeneralizedTime { val: chrono::DateTime<chrono::FixedOffset> },
+    BinaryTime { val: Vec<u8> },
+    BCD { val: isize },
+    BoolArray { val: Vec<u8> },
+    OID { val: String },
+    MMSString { val: String },
+}
+
+/// 'Write' arguments
+#[derive(Args)]
+struct WriteArgs {
+    /// Specify a domain scope for the object
+    #[clap(short, long)]
+    domain: Option<String>,
+
+    /// Variable name
+    name: String,
+
+    #[clap(subcommand)]
+    data: WriteData,
+}
+
+fn print_access_result(label: Option<&str>, res: &AccessResult, annotate_types: bool) {
+    if let Some(label) = label {
+        println!("{label}:");
+    }
+
+    // Indent if following a label
+    let indent = label.iter().len();
+
+    match res {
+        AccessResult::success(data) => print_data(data, indent, annotate_types),
+        AccessResult::failure(err) => {
+            eprintln!(
+                "failure: {:?}",
+                DataAccessErrorValue::try_from(err.0).unwrap_or(DataAccessErrorValue::ObjectValueInvalid)
+            );
+        }
+    }
+}
+
+// TODO should be able to get the CHOICE variant's string identifier from rasn.
+// However, it must be looked up in the list of identifiers using the tag, and
+// it is not clear to me how to get the tag from the generated enum.
+fn data_type(data: &Data) -> &'static str {
+    match data {
+        Data::array(_) => "array",
+        Data::structure(_) => "struct",
+        Data::boolean(_) => "boolean",
+        Data::bit_string(_) => "bit-string",
+        Data::integer(_) => "integer",
+        Data::unsigned(_) => "unsigned",
+        Data::floating_point(_) => "floating-point",
+        Data::octet_string(_) => "octet-string",
+        Data::visible_string(_) => "visible-string",
+        Data::generalized_time(_) => "generalized-string",
+        Data::binary_time(_) => "binary-time",
+        Data::bcd(_) => "bcd",
+        Data::booleanArray(_) => "boolean-array",
+        Data::objId(_) => "object-id",
+        Data::mMSString(_) => "mms-string",
+        _ => "???",
+    }
+}
+
+fn print_data(data: &Data, indent: usize, annotate_types: bool) {
+    let prefix = " ".repeat(indent * 2);
+    let data_type = data_type(data);
+
+    print!("{prefix}");
+
+    match data {
+        Data::array(seq) | Data::structure(seq) => {
+            println!("{data_type}:");
+            seq.iter().for_each(|data| print_data(data, indent + 1, annotate_types))
+        }
+        Data::boolean(val) => print!("{val}"),
+        Data::bit_string(val) => print!("{val}"),
+        Data::integer(val) => print!("{val}"),
+        Data::unsigned(val) => print!("{val}"),
+        Data::floating_point(val) => print!("{:x}", val.0), // TODO need encode/decode for MMS FloatingPoint
+        Data::octet_string(val) => print!("{val:x}"),
+        Data::visible_string(val) => print!("{val}"),
+        Data::generalized_time(val) => print!("{val}"),
+        Data::binary_time(val) => print!("{:x}", val.0), // TODO need encode/decode for MMS TimeOfDay
+        Data::bcd(val) => print!("{val}"),
+        Data::booleanArray(val) => print!("{val}"),
+        Data::objId(val) => print!("{val}"),
+        Data::mMSString(val) => print!("{}", val.0),
+        _ => print!("???"),
+    }
+
+    if annotate_types && !matches!(data, Data::array(_) | Data::structure(_)) {
+        print!("  [{data_type}]");
+    }
+
+    println!("");
+}
+
+#[tokio::main]
+async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    let cli = Cli::parse();
+
+    if cli.debug {
+        env_logger::builder().filter_level(log::LevelFilter::Trace).init();
+    }
+
+    let client = Client::builder().connect(cli.host, cli.port).await?;
+
+    match cli.command {
+        Commands::Identify => {
+            let resp = client.identify().await?;
+
+            println!("vendor:   {}", resp.vendor_name.0);
+            println!("model:    {}", resp.vendor_name.0);
+            println!("revision: {}", resp.vendor_name.0);
+
+            if let Some(syntaxes) = resp.list_of_abstract_syntaxes {
+                println!("syntaxes:");
+                for oid in syntaxes {
+                    println!("          {oid}");
+                }
+            }
+        }
+
+        Commands::List(args) => {
+            let scope = match args.domain {
+                Some(domain) => GetNameListRequestObjectScope::domainSpecific(Identifier(
+                    VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap(),
+                )),
+                None => GetNameListRequestObjectScope::vmdSpecific(()),
+            };
+
+            let resp = client
+                .get_name_list(ObjectClass::basicObjectClass(args.class as u8), scope)
+                .await?;
+
+            for Identifier(id) in resp {
+                println!("{id}");
+            }
+        }
+
+        Commands::Read(args) => {
+            let multiple = args.names.len() > 1;
+
+            let variables = args
+                .names
+                .iter()
+                .map(|name| {
+                    let object = match args.domain.as_ref() {
+                        Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
+                            domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
+                            item_id: Identifier(VisibleString::from_iso646_bytes(name.as_bytes()).unwrap()),
+                        }),
+                        None => ObjectName::vmd_specific(Identifier(
+                            VisibleString::from_iso646_bytes(name.as_bytes()).unwrap(),
+                        )),
+                    };
+
+                    AnonymousVariableAccessSpecificationListOfVariable {
+                        variable_specification: VariableSpecification::name(object),
+                        alternate_access: None,
+                    }
+                })
+                .collect();
+
+            let variable_list = VariableAccessSpecificationListOfVariable(variables);
+
+            let resp = client
+                .read(VariableAccessSpecification::listOfVariable(variable_list))
+                .await?;
+
+            for (name, res) in args.names.iter().zip(resp) {
+                // Add label if multiple variables were requested
+                let label = if multiple { Some(name.as_str()) } else { None };
+
+                print_access_result(label, &res, args.types);
+            }
+        }
+
+        Commands::ReadList(args) => {
+            let object = match args.domain.as_ref() {
+                Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
+                    domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
+                    item_id: Identifier(VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap()),
+                }),
+                None => ObjectName::vmd_specific(Identifier(
+                    VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap(),
+                )),
+            };
+
+            let resp = client
+                .read(VariableAccessSpecification::variableListName(object))
+                .await?;
+
+            for res in resp {
+                print_access_result(None, &res, args.types);
+            }
+        }
+
+        Commands::Write(args) => {
+            let object = match args.domain.as_ref() {
+                Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
+                    domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
+                    item_id: Identifier(VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap()),
+                }),
+                None => ObjectName::vmd_specific(Identifier(
+                    VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap(),
+                )),
+            };
+
+            let variable = AnonymousVariableAccessSpecificationListOfVariable {
+                variable_specification: VariableSpecification::name(object),
+                alternate_access: None,
+            };
+            let variable_list = VariableAccessSpecificationListOfVariable(vec![variable]);
+
+            let data = match args.data {
+                WriteData::Bool { val } => Data::boolean(val),
+                WriteData::BitString { val } => Data::bit_string(BitString::from_vec(val)),
+                WriteData::Integer { val } => Data::integer(Integer::Primitive(val)),
+                WriteData::Unsigned { val } => Data::unsigned(Integer::Primitive(val as isize)),
+                WriteData::Float { .. } => todo!("implement encoder for MMS floating point"),
+                WriteData::Bytes { val } => Data::octet_string(OctetString::from(val)),
+                WriteData::String { val } => Data::visible_string(VisibleString::from_iso646_bytes(val.as_bytes())?),
+                WriteData::GeneralizedTime { val } => Data::generalized_time(val),
+                WriteData::BinaryTime { val } => Data::binary_time(TimeOfDay(OctetString::from(val))),
+                WriteData::BCD { val } => Data::bcd(Integer::Primitive(val)),
+                WriteData::BoolArray { val } => {
+                    let mut bits = BitString::new();
+                    val.iter().for_each(|bit| bits.push(*bit != 0));
+                    Data::booleanArray(bits)
+                }
+                WriteData::OID { val } => Data::objId(
+                    ObjectIdentifier::new(
+                        val.split('.')
+                            .map(|id| id.parse::<u32>().unwrap_or_default())
+                            .collect::<Vec<_>>(),
+                    )
+                    .ok_or("invalid OID")?,
+                ),
+                WriteData::MMSString { val } => {
+                    Data::mMSString(MMSString(VisibleString::from_iso646_bytes(val.as_bytes())?))
+                }
+            };
+
+            let resp = client
+                .write(VariableAccessSpecification::listOfVariable(variable_list), vec![data])
+                .await?;
+
+            if let Some(AnonymousWriteResponse::failure(err)) = resp.first() {
+                eprintln!(
+                    "failure: {:?}",
+                    DataAccessErrorValue::try_from(err.0).unwrap_or(DataAccessErrorValue::ObjectValueInvalid)
+                );
+            }
+        }
+    }
+
+    Ok(())
+}

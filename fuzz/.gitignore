@@ -1,0 +1,6 @@
+target
+# Ignore everything but .seed files for tests under corpus
+corpus/*/*
+!corpus/*/*.seed
+artifacts
+coverage

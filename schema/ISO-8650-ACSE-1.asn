@@ -1,0 +1,320 @@
+-- Module ACSE-1 (X.227 Bis:09/1998)
+-- Modified for compatibility with rasn-compiler
+
+ACSE-1
+{ joint-iso-itu-t association-control(2) modules(0) acse1(1) version1(1) }
+DEFINITIONS ::= BEGIN
+
+IMPORTS
+   Context-list,
+   Abstract-syntax-name,
+   Transfer-syntax-name,
+   Presentation-context-identifier,
+   PDV-list,
+   Simply-encoded-data,
+   Fully-encoded-data
+FROM ISO8823-PRESENTATION
+;
+
+-- Productions
+
+-- Set to NULL to eliminate dependency on InformationFramework module
+Name ::= NULL
+RelativeDistinguishedName ::= NULL
+
+External-data ::= [UNIVERSAL 8] IMPLICIT SEQUENCE {
+   direct-reference OBJECT IDENTIFIER OPTIONAL,
+   indirect-reference INTEGER OPTIONAL,
+   -- data-value-descriptor ObjectDescriptor OPTIONAL,
+   encoding CHOICE {
+      single-ASN1-type [0] EXPLICIT EXTERNAL,
+      octet-aligned [1] IMPLICIT OCTET STRING,
+      arbitrary [2] IMPLICIT BIT STRING
+   }
+}
+
+ABRT-diagnostic ::= ENUMERATED {
+   no-reason-given(1),
+   protocol-error(2),
+   authentication-mechanism-name-not-recognized(3),
+   authentication-mechanism-name-required(4),
+   authentication-failure(5),
+   authentication-required(6)
+}
+
+ABRT-source ::= INTEGER {
+   acse-service-user(0),
+   acse-service-provider(1)
+} (0..1)
+
+ACSE-requirements ::= BIT STRING {
+   authentication(0),
+   aSO-context-negotiation(1),
+   higher-level-association(2),
+   nested-association(3)
+}
+
+ASO-context-name ::= OBJECT IDENTIFIER
+
+Application-context-name ::= ASO-context-name
+
+ASO-qualifier-form1 ::= RelativeDistinguishedName
+
+ASO-qualifier-form2 ::= INTEGER
+
+ASO-qualifier-form3 ::= PrintableString
+
+ASO-qualifier-form4 ::= OCTET STRING -- [0] IMPLICIT RELATIVE OID
+
+ASO-qualifier ::= CHOICE {
+   aso-qualifier-form1 ASO-qualifier-form1,
+   aso-qualifier-form2 ASO-qualifier-form2,
+   aso-qualifier-form3 ASO-qualifier-form3,
+   aso-qualifier-form4 ASO-qualifier-form4
+}
+
+AE-qualifier ::= ASO-qualifier
+
+AP-title-form1 ::= Name
+
+AP-title-form2 ::= OBJECT IDENTIFIER
+
+AP-title-form3 ::= PrintableString
+
+AP-title-form4 ::= OCTET STRING -- [0] IMPLICIT RELATIVE OID
+
+AE-title-form1 ::= Name
+
+AE-title-form2 ::= OBJECT IDENTIFIER
+
+AE-invocation-identifier ::= INTEGER
+
+AP-invocation-identifier ::= INTEGER
+
+ASOI-identifier ::= INTEGER (1..128)
+
+Context-Result ::= INTEGER {
+   acceptance(0),
+   user-rejection(1),
+   provider-rejection(2)
+}
+
+Concrete-syntax-name ::= Transfer-syntax-name
+
+Associate-result ::= INTEGER {
+   accepted(0),
+   rejected-permanent(1),
+   rejected-transient(2)
+} (0..2)
+
+Association-data ::= SEQUENCE OF External-data
+
+User-information ::= Association-data
+
+Implementation-data ::= GraphicString
+
+Mechanism-name ::= OBJECT IDENTIFIER
+
+Release-request-reason ::= INTEGER {
+   normal(0),
+   urgent(1),
+   user-defined(30)
+} (0 | 1 | 30)
+
+Release-response-reason ::= INTEGER {
+   normal(0),
+   not-finished(1),
+   user-defined(30)
+} (0 | 1 | 30)
+
+AP-title ::= CHOICE {
+   ap-title-form1 AP-title-form1,
+   ap-title-form2 AP-title-form2,
+   ap-title-form3 AP-title-form3,
+   ap-title-form4 AP-title-form4
+}
+
+Authentication-value-other ::= SEQUENCE {
+   other-mechanism-name OBJECT IDENTIFIER,
+   other-mechanism-value EXTERNAL
+}
+
+Authentication-value ::= CHOICE {
+   charstring [0] IMPLICIT GraphicString,
+   bitstring [1] IMPLICIT BIT STRING,
+   external [2] IMPLICIT External-data,
+   other [3] IMPLICIT Authentication-value-other
+}
+
+ASO-context-name-list ::= SEQUENCE OF ASO-context-name
+
+Default-Context-List ::= SEQUENCE OF SEQUENCE {
+   abstract-syntax-name [0] IMPLICIT Abstract-syntax-name OPTIONAL,
+   transfer-syntax-name [1] IMPLICIT Transfer-syntax-name
+}
+
+Syntactic-context-list ::= CHOICE {
+   context-list [0] Context-list,
+   default-contact-list [1] Default-Context-List
+}
+
+ASOI-tag ::= SEQUENCE (SIZE (0..7)) OF SEQUENCE {
+   qualifier [0] ASO-qualifier OPTIONAL,
+   identifier [1] ASOI-identifier OPTIONAL
+}
+
+AARQ-apdu ::= [APPLICATION 0] IMPLICIT SEQUENCE {
+   protocol-version [0] IMPLICIT BIT STRING {
+      version1(0)
+   } OPTIONAL,
+   aSO-context-name [1] EXPLICIT ASO-context-name,
+   called-AP-title [2] AP-title OPTIONAL,
+   called-AE-qualifier [3] AE-qualifier OPTIONAL,
+   called-AP-invocation-identifier [4] AP-invocation-identifier OPTIONAL,
+   called-AE-invocation-identifier [5] AE-invocation-identifier OPTIONAL,
+   calling-AP-title [6] AP-title OPTIONAL,
+   calling-AE-qualifier [7] AE-qualifier OPTIONAL,
+   calling-AP-invocation-identifier [8] AP-invocation-identifier OPTIONAL,
+   calling-AE-invocation-identifier [9] AE-invocation-identifier OPTIONAL,
+   sender-acse-requirements [10] IMPLICIT ACSE-requirements OPTIONAL,
+   mechanism-name [11] IMPLICIT Mechanism-name OPTIONAL,
+   calling-authentication-value [12] Authentication-value OPTIONAL,
+   aSO-context-name-list [13] IMPLICIT ASO-context-name-list OPTIONAL,
+   implementation-information [29] IMPLICIT Implementation-data OPTIONAL,
+   p-context-definition-list [14] Syntactic-context-list OPTIONAL,
+   called-asoi-tag [15] IMPLICIT ASOI-tag OPTIONAL,
+   calling-asoi-tag [16] IMPLICIT ASOI-tag OPTIONAL,
+   user-information [30] IMPLICIT Association-data OPTIONAL
+}
+
+Associate-source-diagnostic ::= CHOICE {
+   acse-service-user [1] EXPLICIT INTEGER {
+      null(0),
+      no-reason-given(1),
+      application-context-name-not-supported(2),
+      calling-AP-title-not-recognized(3),
+      calling-AP-invocation-identifier-not-recognized(4),
+      calling-AE-qualifier-not-recognized(5),
+      calling-AE-invocation-identifier-not-recognized(6),
+      called-AP-title-not-recognized(7),
+      called-AP-invocation-identifier-not-recognized(8),
+      called-AE-qualifier-not-recognized(9),
+      called-AE-invocation-identifier-not-recognized(10),
+      authentication-mechanism-name-not-recognized(11),
+      authentication-mechanism-name-required(12),
+      authentication-failure(13),
+      authentication-required(14)
+   } (0..14),
+   acse-service-provider [2] EXPLICIT INTEGER {
+      null(0),
+      no-reason-given(1),
+      no-common-acse-version(2)
+   } (0..2)
+}
+
+P-context-result-list ::= SEQUENCE OF SEQUENCE {
+   result [0] IMPLICIT Context-Result,
+   concrete-syntax-name [1] IMPLICIT Concrete-syntax-name OPTIONAL,
+   provider-reason [2] IMPLICIT INTEGER {
+      reason-not-specified(0),
+      abstract-syntax-not-supported(1),
+      proposed-transfer-syntaxes-not-supported(2),
+      local-limit-on-DCS-exceeded(3)
+   } OPTIONAL
+}
+
+AARE-apdu ::= [APPLICATION 1] IMPLICIT SEQUENCE {
+   protocol-version [0] IMPLICIT BIT STRING {
+      version1(0)
+   } OPTIONAL,
+   aSO-context-name [1] EXPLICIT ASO-context-name,
+   result [2] EXPLICIT Associate-result,
+   result-source-diagnostic [3] EXPLICIT Associate-source-diagnostic,
+   responding-AP-title [4] EXPLICIT AP-title OPTIONAL,
+   responding-AE-qualifier [5] EXPLICIT AE-qualifier OPTIONAL,
+   responding-AP-invocation-identifier [6] EXPLICIT AP-invocation-identifier OPTIONAL,
+   responding-AE-invocation-identifier [7] EXPLICIT AE-invocation-identifier OPTIONAL,
+   responder-acse-requirements [8] IMPLICIT ACSE-requirements OPTIONAL,
+   mechanism-name [9] IMPLICIT Mechanism-name OPTIONAL,
+   responding-authentication-value [10] Authentication-value OPTIONAL,
+   aSO-context-name-list [11] IMPLICIT ASO-context-name-list OPTIONAL,
+   implementation-information [29] IMPLICIT Implementation-data OPTIONAL,
+   p-context-result-list [12] IMPLICIT P-context-result-list OPTIONAL,
+   called-asoi-tag [13] IMPLICIT ASOI-tag OPTIONAL,
+   calling-asoi-tag [14] IMPLICIT ASOI-tag OPTIONAL,
+   user-information [30] IMPLICIT Association-data OPTIONAL
+}
+
+RLRQ-apdu ::= [APPLICATION 2] IMPLICIT SEQUENCE {
+   reason [0] IMPLICIT Release-request-reason OPTIONAL,
+   aso-qualifier [13] EXPLICIT ASO-qualifier OPTIONAL,
+   asoi-identifier [14] IMPLICIT ASOI-identifier OPTIONAL,
+   user-information [30] IMPLICIT Association-data OPTIONAL
+}
+
+RLRE-apdu ::= [APPLICATION 3] IMPLICIT SEQUENCE {
+   reason [0] IMPLICIT Release-response-reason OPTIONAL,
+   aso-qualifier [13] EXPLICIT ASO-qualifier OPTIONAL,
+   asoi-identifier [14] IMPLICIT ASOI-identifier OPTIONAL,
+   user-information [30] IMPLICIT Association-data OPTIONAL
+}
+
+ABRT-apdu ::= [APPLICATION 4] IMPLICIT SEQUENCE {
+   abort-source [0] IMPLICIT ABRT-source,
+   abort-diagnostic [1] IMPLICIT ABRT-diagnostic OPTIONAL,
+   aso-qualifier [13] ASO-qualifier OPTIONAL,
+   asoi-identifier [14] IMPLICIT ASOI-identifier OPTIONAL,
+   user-information [30] IMPLICIT Association-data OPTIONAL
+}
+
+User-Data ::= CHOICE {
+   user-information User-information,
+   simply-encoded-data Simply-encoded-data,
+   fully-encoded-data [0] EXPLICIT Fully-encoded-data
+}
+
+A-DT-apdu ::= [APPLICATION 5] IMPLICIT SEQUENCE {
+   aso-qualifier [0] EXPLICIT ASO-qualifier OPTIONAL,
+   asoi-identifier [1] IMPLICIT ASOI-identifier OPTIONAL,
+   a-user-data [30] EXPLICIT User-Data
+}
+
+ACRQ-apdu ::= [APPLICATION 6] IMPLICIT SEQUENCE {
+   aso-qualifier [0] EXPLICIT ASO-qualifier OPTIONAL,
+   asoi-identifier [1] IMPLICIT ASOI-identifier OPTIONAL,
+   aSO-context-name [3] IMPLICIT ASO-context-name OPTIONAL,
+   aSO-context-name-list [4] IMPLICIT ASO-context-name-list OPTIONAL,
+   p-context-definition-list [5] Syntactic-context-list OPTIONAL,
+   user-information [30] IMPLICIT User-information OPTIONAL
+}
+
+ACRP-apdu ::= [APPLICATION 7] IMPLICIT SEQUENCE {
+   aso-qualifier [0] EXPLICIT ASO-qualifier OPTIONAL,
+   asoi-identifier [1] IMPLICIT ASOI-identifier OPTIONAL,
+   aSO-context-name [3] IMPLICIT ASO-context-name-list OPTIONAL,
+   p-context-result-list [4] IMPLICIT P-context-result-list OPTIONAL,
+   user-information [30] IMPLICIT User-information OPTIONAL
+}
+
+ACSE-apdu ::= CHOICE {
+   aarq AARQ-apdu,
+   aare AARE-apdu,
+   rlrq RLRQ-apdu,
+   rlre RLRE-apdu,
+   abrt ABRT-apdu,
+   adt A-DT-apdu,
+   acrq ACRQ-apdu,
+   acrp ACRP-apdu
+}
+
+AE-title ::= CHOICE {
+   ae-title-form1 AE-title-form1,
+   ae-title-form2 AE-title-form2
+}
+
+-- Value assignments
+
+acse-as-id OBJECT IDENTIFIER ::= { joint-iso-itu-t(2) association-control(2) abstract-syntax(1) apdus(0) version1(1) }
+aCSE-id OBJECT IDENTIFIER ::= { joint-iso-itu-t(2) association-control(2) ase-id(3) acse-ase(1) version(1) }
+
+END
