@@ -3,7 +3,7 @@
 
 [package]
 name = "mms-fuzz"
-edition = "2021"
+edition = "2024"
 
 [package.metadata]
 cargo-fuzz = true
@@ -11,7 +11,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4.9"
 bytes = "1.10.1"
-tokio = { version = "1.43.0", features = ["rt"] }
+tokio = { version = "1.44.0", features = ["rt"] }
 tokio-util = "0.7.13"
 futures = "0.3.31"
 mms = { path = ".." }

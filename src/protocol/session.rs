@@ -636,7 +636,7 @@ impl Spdu {
             (si, Some(prev)) => {
                 return Err(Error::ProtocolError(format!(
                     "Session: unsupported SPDU sequence: {prev:?} --> {si:?}"
-                )))
+                )));
             }
         };
 

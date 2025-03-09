@@ -3,7 +3,7 @@
 //! ITU-T X.226 is referenced in the below code.
 
 use crate::error::Error;
-use crate::messages::{acse_1, iso8823_presentation, iso_9506_mms_1};
+use crate::messages::{acse_1, iso_9506_mms_1, iso8823_presentation};
 use crate::oid;
 use bytes::{Buf, Bytes, BytesMut};
 use rasn::{ber, de::Decode, enc::Encode, types::*};
@@ -105,7 +105,7 @@ impl Ppdu {
         let contexts = params.presentation_context_definition_list.ok_or(Error::ProtocolError(
             "Presentation: no context definition list in CP-PDU".into(),
         ))?;
-        for context in contexts.0 .0 {
+        for context in contexts.0.0 {
             let id = context.presentation_context_identifier.0;
             let syntax = &context.abstract_syntax_name.0;
 
@@ -126,8 +126,8 @@ impl Ppdu {
                 iso_9506_mms_1::MMS_ABSTRACT_SYNTAX_VERSION1.as_ref()
             )))?,
             // Note: "calling" and "called" intentionally swapped to reflect recipient's perspective
-            local_presentation_selector: params.called_presentation_selector.map(|p| p.0 .0),
-            remote_presentation_selector: params.calling_presentation_selector.map(|p| p.0 .0),
+            local_presentation_selector: params.called_presentation_selector.map(|p| p.0.0),
+            remote_presentation_selector: params.calling_presentation_selector.map(|p| p.0.0),
         };
 
         let user_data = params
@@ -217,12 +217,12 @@ impl Ppdu {
             .ok_or(Error::ProtocolError(
                 "Presentation: no context definition result list in CPA-PDU".into(),
             ))?;
-        if context_results.0 .0.len() != 2 {
+        if context_results.0.0.len() != 2 {
             return Err(Error::ProtocolError(
                 "Presentation: missing context results for ACSE and/or MMS CPA-PDU".into(),
             ));
         }
-        if context_results.0 .0.iter().any(
+        if context_results.0.0.iter().any(
             |r| r.result != Result(Integer::Primitive(0)), // acceptance(0)
         ) {
             return Err(Error::ProtocolError(
@@ -374,7 +374,7 @@ impl Ppdu {
                     _ => {
                         return Err(Error::ProtocolError(
                             "Presentation: expected single-ASN1-type user data".into(),
-                        ))
+                        ));
                     }
                 }
             }
@@ -382,7 +382,7 @@ impl Ppdu {
             _ => {
                 return Err(Error::ProtocolError(
                     "Presentation: expected Fully-encoded-data user data".into(),
-                ))
+                ));
             }
         };
 

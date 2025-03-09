@@ -88,7 +88,7 @@ impl Apdu {
             _ => {
                 return Err(Error::ProtocolError(
                     "ACSE: expected an AARQ-APDU in associatiation request".into(),
-                ))
+                ));
             }
         };
 
@@ -163,7 +163,7 @@ impl Apdu {
             _ => {
                 return Err(Error::ProtocolError(
                     "ACSE: expected an AARE-APDU in associatiation response".into(),
-                ))
+                ));
             }
         };
 
@@ -253,7 +253,7 @@ impl Apdu {
             _ => {
                 return Err(Error::ProtocolError(
                     "ACSE: expected an ABRT-APDU in abort message".into(),
-                ))
+                ));
             }
         };
 
@@ -305,7 +305,7 @@ impl Apdu {
             _ => {
                 return Err(Error::ProtocolError(
                     "ACSE: expected single-ASN1-type association encoding".into(),
-                ))
+                ));
             }
         };
 

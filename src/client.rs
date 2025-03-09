@@ -6,10 +6,10 @@ pub mod vmd_support;
 use crate::bitstring;
 use crate::error::Error;
 use crate::messages::{iso_9506_mms_1::*, mms_object_module_1::*};
-use crate::protocol::{self, mms::*, PDUReceiver, PDUSender};
-use futures::{channel::mpsc, SinkExt, StreamExt};
+use crate::protocol::{self, PDUReceiver, PDUSender, mms::*};
+use futures::{SinkExt, StreamExt, channel::mpsc};
 use log::{debug, error, trace, warn};
-use rand::{rngs::StdRng, RngCore, SeedableRng};
+use rand::{RngCore, SeedableRng, rngs::StdRng};
 use std::{collections::HashMap, io, sync::Arc, sync::Mutex, time::Duration};
 
 const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -181,12 +181,12 @@ impl Client {
                     }
 
                     MMSpdu::cancel_ResponsePDU(resp) => {
-                        if let Some(mut sender) = requests.lock().ok().and_then(|mut r| r.remove(&resp.0 .0)) {
+                        if let Some(mut sender) = requests.lock().ok().and_then(|mut r| r.remove(&resp.0.0)) {
                             let _ = sender.send(pdu).await;
                         } else {
                             trace!(
                                 "dropping Cancel-Response: no pending request for invoke ID {}",
-                                resp.0 .0
+                                resp.0.0
                             );
                         }
                     }

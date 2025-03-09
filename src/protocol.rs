@@ -11,7 +11,7 @@ pub(crate) mod mms; // Publically exported by lib.rs
 use crate::error::Error;
 use crate::messages::iso_9506_mms_1::MMSpdu;
 use bytes::{Bytes, BytesMut};
-use futures::{channel::mpsc, future, SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt, channel::mpsc, future};
 use log::{trace, warn};
 use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -64,8 +64,7 @@ pub fn encode(mpdu: &MMSpdu, pp: &ProtocolParams) -> Result<Bytes, Error> {
 
             trace!(
                 "session: encode connect (CN), calling session {:?}, called session {:?}",
-                pp.session.local_session_selector,
-                pp.session.remote_session_selector
+                pp.session.local_session_selector, pp.session.remote_session_selector
             );
         }
 
@@ -99,8 +98,7 @@ pub fn encode(mpdu: &MMSpdu, pp: &ProtocolParams) -> Result<Bytes, Error> {
 
             trace!(
                 "session: encode accept (AC), calling session {:?}, responding session {:?}",
-                pp.session.remote_session_selector,
-                pp.session.local_session_selector
+                pp.session.remote_session_selector, pp.session.local_session_selector
             );
         }
 
@@ -142,8 +140,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
         session::Spdu::Connect(params) => {
             trace!(
                 "session: decoded connect (CN), calling session {:?}, called session {:?}",
-                params.calling_session_selector,
-                params.called_session_selector
+                params.calling_session_selector, params.called_session_selector
             );
 
             buf = params
@@ -177,8 +174,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
         session::Spdu::Accept(params) => {
             trace!(
                 "session: decoded accept (AC), calling session {:?}, responding session {:?}",
-                params.calling_session_selector,
-                params.responding_session_selector
+                params.calling_session_selector, params.responding_session_selector
             );
 
             buf = params
