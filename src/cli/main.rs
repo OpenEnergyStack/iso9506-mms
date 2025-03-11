@@ -2,6 +2,14 @@
 
 use clap::{Args, Parser, Subcommand};
 use mms::{client::*, *};
+use rustls_pki_types::{CertificateDer, PrivateKeyDer};
+use std::{
+    fs::File,
+    io,
+    io::BufReader,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 /// Command line arguments
 #[derive(Parser)]
@@ -11,12 +19,32 @@ struct Cli {
     #[arg(long, default_value = "false")]
     debug: bool,
 
-    /// Server hostname or IP address
-    host: String,
+    /// Enable TLS
+    #[arg(long, default_value = "false")]
+    tls: bool,
+
+    /// Set TLS CA certificate
+    #[arg(long, requires = "tls")]
+    ca_cert: Option<PathBuf>,
+
+    /// Set mTLS client certificate
+    #[arg(long, requires = "tls", requires = "client_key")]
+    client_cert: Option<PathBuf>,
+
+    /// Set mTLS client key
+    #[arg(long, requires = "tls", requires = "client_cert")]
+    client_key: Option<PathBuf>,
+
+    /// Set the FQDN of the server certificate (if different than 'host')
+    #[arg(long, requires = "tls")]
+    cert_domain: Option<String>,
 
     /// Server port
     #[arg(short, long, default_value = "102")]
     port: u16,
+
+    /// Server hostname or IP address
+    host: String,
 
     /// Operation
     #[clap(subcommand)]
@@ -249,6 +277,64 @@ fn print_data(data: &Data, indent: usize, annotate_types: bool) {
     println!();
 }
 
+fn load_certs(pem_file: &Path) -> io::Result<Vec<CertificateDer<'static>>> {
+    let file = File::open(pem_file)?;
+    let mut reader = BufReader::new(file);
+
+    rustls_pemfile::certs(&mut reader).collect::<io::Result<Vec<_>>>()
+}
+
+fn load_private_key(der_file: &Path) -> io::Result<PrivateKeyDer<'static>> {
+    let file = File::open(der_file)?;
+    let mut reader = BufReader::new(file);
+
+    rustls_pemfile::private_key(&mut reader)
+        .transpose()
+        .unwrap_or(Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "File does not contain a private key",
+        )))
+}
+
+fn make_tls_config(cli: &Cli) -> io::Result<TLSConfig> {
+    use rustls_platform_verifier::BuilderVerifierExt;
+
+    // Client config builder using the `rustls` default crypto provider
+    let builder = rustls::ClientConfig::builder_with_provider(Arc::new(rustls::crypto::aws_lc_rs::default_provider()))
+        .with_safe_default_protocol_versions()
+        .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+
+    // Load CA certs from a PEM file, if supplied, or fall-back to the system certificate store
+    let builder = if let Some(ca_cert) = &cli.ca_cert {
+        let mut root_store = rustls::RootCertStore::empty();
+        let certs = load_certs(ca_cert)?;
+        root_store.add_parsable_certificates(certs);
+        builder.with_root_certificates(root_store)
+    } else {
+        builder.with_platform_verifier()
+    };
+
+    // Enable mTLS if client certs were supplied
+    let config = if let (Some(cert_path), Some(key_path)) = (&cli.client_cert, &cli.client_key) {
+        let certs = load_certs(cert_path)?;
+        let key = load_private_key(key_path)?;
+        builder
+            .with_client_auth_cert(certs, key)
+            .map_err(|err| io::Error::new(io::ErrorKind::InvalidInput, err))?
+    } else {
+        builder.with_no_client_auth()
+    };
+
+    let config = TLSConfig::new(config);
+
+    // Override default domain name
+    if let Some(domain_name) = &cli.cert_domain {
+        Ok(config.domain_name(domain_name.clone()))
+    } else {
+        Ok(config)
+    }
+}
+
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
@@ -257,7 +343,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         env_logger::builder().filter_level(log::LevelFilter::Trace).init();
     }
 
-    let client = Client::builder().connect(cli.host, cli.port).await?;
+    let builder = if cli.tls {
+        Client::builder().use_tls(make_tls_config(&cli)?)
+    } else {
+        Client::builder()
+    };
+
+    let client = builder.connect(cli.host, cli.port).await?;
 
     match cli.command {
         Commands::Identify => {

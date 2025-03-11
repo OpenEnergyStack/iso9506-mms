@@ -176,7 +176,7 @@ mod tests {
     use crate::messages::{iso_9506_mms_1::*, mms_object_module_1::*};
     use bitvec::prelude::*;
     use rasn::ber;
-    use rasn::prelude::*;
+    use rasn::types::{Integer, VisibleString};
 
     // Test vectors derived from public Wireshark captures:
     // https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/mms.pcap.gz

@@ -17,9 +17,34 @@ const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
 const CHANNEL_SIZE: usize = 64;
 
 /// Configuration for TLS connections
+#[derive(Clone, Debug)]
 pub struct TLSConfig {
-    pub config: rustls::ClientConfig,
-    pub domain_name: Option<String>,
+    config: Arc<rustls::ClientConfig>,
+    domain_name: Option<String>,
+}
+
+impl TLSConfig {
+    pub fn new(config: rustls::ClientConfig) -> Self {
+        Self {
+            config: Arc::new(config),
+            domain_name: None,
+        }
+    }
+
+    pub fn domain_name(mut self, domain_name: String) -> Self {
+        self.domain_name = Some(domain_name);
+        self
+    }
+}
+
+impl Default for TLSConfig {
+    /// Default TLS configuration loads CA certs from the host system
+    /// and does not enable client authentication.
+    fn default() -> Self {
+        use rustls_platform_verifier::ConfigVerifierExt;
+
+        Self::new(rustls::ClientConfig::with_platform_verifier())
+    }
 }
 
 /// Builder object for a `Client`
@@ -30,13 +55,13 @@ pub struct Builder {
 
 impl Builder {
     /// Override the default connect timeout
-    pub fn timeout_after(mut self, timeout: Duration) -> Builder {
+    pub fn timeout_after(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
     /// Enable TLS
-    pub fn use_tls(mut self, config: TLSConfig) -> Builder {
+    pub fn use_tls(mut self, config: TLSConfig) -> Self {
         self.tls_config = Some(config);
         self
     }
@@ -75,7 +100,7 @@ impl Builder {
 
                     debug!("performing TLS handshake, SNI: {:?}", domain);
 
-                    let tokio_connector = tokio_rustls::TlsConnector::from(Arc::new(tls.config));
+                    let tokio_connector = tokio_rustls::TlsConnector::from(tls.config);
                     let stream = tokio_connector.connect(domain, stream).await?;
 
                     debug!("TLS handshake succeeded");

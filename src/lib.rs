@@ -11,4 +11,10 @@ mod oid;
 pub use crate::error::*;
 pub use crate::messages::{iso_9506_mms_1::*, iso_9506_mms_1_a::*, mms_object_module_1::*};
 pub use crate::protocol::mms::*;
-pub use rasn::types::*;
+
+// Re-export common types from generated ASN.1 bindings
+pub use rasn::types::{
+    Any, BitStr, BitString, BmpString, Constructed, Date, FixedBitString, FixedOctetString, GeneralString,
+    GeneralizedTime, GraphicString, Ia5String, Integer, NumericString, ObjectIdentifier, OctetString, Oid,
+    PrintableString, RealType, SequenceOf, SetOf, TeletexString, UniversalString, UtcTime, Utf8String, VisibleString,
+};
