@@ -6,13 +6,13 @@
 //! A TPKT consists of two parts:  a packet-header and a TPDU.  The
 //! format of the header is constant regardless of the type of packet.
 //! The format of the packet-header is as follows:
-//!
+//! ```
 //!   0                   1                   2                   3
 //!   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 //!  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //!  |      vrsn     |    reserved   |          packet length        |
 //!  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//!
+//! ```
 //! where:
 //!
 //! vrsn                         8 bits

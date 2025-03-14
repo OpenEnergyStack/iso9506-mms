@@ -61,6 +61,26 @@ FROM MMS-Object-Module-1 { iso standard 9506 part(1) mms-object-model-version1(2
 
 -- Productions
 
+Integer8 ::= INTEGER (-128..127)
+
+Integer16 ::= INTEGER (-32768..32767)
+
+Integer32 ::= INTEGER (-2147483648..2147483647)
+
+Unsigned8 ::= INTEGER (0..127)
+
+Unsigned16 ::= INTEGER (0..32767)
+
+Unsigned32 ::= INTEGER (0..2147483647)
+
+FloatingPoint ::= OCTET STRING
+
+MMSString ::= VisibleString
+
+MMS255String ::= VisibleString (SIZE (1..255))
+
+TimeOfDay ::= OCTET STRING (SIZE (4 | 6))
+
 Identifier ::= VisibleString (SIZE (1..maxIdentifier))
 
 ObjectName ::= CHOICE {
@@ -71,8 +91,6 @@ ObjectName ::= CHOICE {
    },
    aa-specific [2] IMPLICIT Identifier
 }
-
-Unsigned32 ::= INTEGER (0..2147483647)
 
 AttachToEventCondition ::= SEQUENCE {
    eventEnrollmentName [0] ObjectName,
@@ -91,22 +109,10 @@ AttachToSemaphore ::= SEQUENCE {
    relinquishIfConnectionLost [6] IMPLICIT BOOLEAN DEFAULT TRUE
 }
 
-MMSString ::= VisibleString
-
 TypeSpecification ::= CHOICE {
    typeName [0] ObjectName,
    typeDescription TypeDescription
 }
-
-Integer32 ::= INTEGER (-2147483648..2147483647)
-
-Unsigned8 ::= INTEGER (0..127)
-
-TimeOfDay ::= OCTET STRING (SIZE (4 | 6))
-
-MMS255String ::= VisibleString (SIZE (1..255))
-
-FloatingPoint ::= OCTET STRING
 
 Data ::= CHOICE {
    array [1] IMPLICIT SEQUENCE OF Data,
@@ -126,12 +132,6 @@ Data ::= CHOICE {
    ...,
    mMSString [16] IMPLICIT MMSString
 }
-
-Integer8 ::= INTEGER (-128..127)
-
-Integer16 ::= INTEGER (-32768..32767)
-
-Unsigned16 ::= INTEGER (0..32767)
 
 Start-Error ::= ProgramInvocationState
 
