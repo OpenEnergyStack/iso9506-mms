@@ -1,4 +1,6 @@
+#[allow(clippy::style)]
 pub mod messages {
+    // Import generated ASN.1 bindings
     include!(concat!(env!("OUT_DIR"), "/messages.rs"));
 }
 
