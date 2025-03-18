@@ -151,8 +151,8 @@ pub enum ServiceSupportOptionsBit {
 ///
 /// # Example
 /// ```
-/// use rasn::prelude::*;
 /// use mms::bitstring;
+/// use rasn::prelude::*;
 ///
 /// let mask: FixedBitString<8> = bitstring!(0, 2, 7);
 /// ```
@@ -171,12 +171,17 @@ macro_rules! bitstring {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::bitstring;
-    use crate::messages::{iso_9506_mms_1::*, mms_object_module_1::*};
     use bitvec::prelude::*;
-    use rasn::ber;
-    use rasn::types::{Integer, VisibleString};
+    use rasn::{
+        ber,
+        types::{Integer, VisibleString},
+    };
+
+    use super::*;
+    use crate::{
+        bitstring,
+        messages::{iso_9506_mms_1::*, mms_object_module_1::*},
+    };
 
     // Test vectors derived from public Wireshark captures:
     // https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/mms.pcap.gz

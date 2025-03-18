@@ -2,11 +2,14 @@
 //! Code bindings were generated from `ISO-8650-ACSE-1.asn`.
 //! ITU-T X.227 is referenced in the below code.
 
-use crate::error::Error;
-use crate::messages::{acse_1, iso_9506_mms_1};
-use crate::oid;
 use num_enum::TryFromPrimitive;
 use rasn::{ber, de::Decode, enc::Encode, types::*};
+
+use crate::{
+    error::Error,
+    messages::{acse_1, iso_9506_mms_1},
+    oid,
+};
 
 // Version 1
 const PROTOCOL_VERSION: u8 = 0b10000000;

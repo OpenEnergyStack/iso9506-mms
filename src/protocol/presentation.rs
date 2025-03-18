@@ -2,11 +2,14 @@
 //! Code bindings were generated from `ISO-8823-PRESENTATION.asn`.
 //! ITU-T X.226 is referenced in the below code.
 
-use crate::error::Error;
-use crate::messages::{acse_1, iso_9506_mms_1, iso8823_presentation};
-use crate::oid;
 use bytes::{Buf, Bytes, BytesMut};
 use rasn::{ber, de::Decode, enc::Encode, types::*};
+
+use crate::{
+    error::Error,
+    messages::{acse_1, iso_9506_mms_1, iso8823_presentation},
+    oid,
+};
 
 // Version 1
 const PROTOCOL_VERSION: u8 = 0b10000000;

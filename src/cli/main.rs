@@ -1,8 +1,5 @@
 //! MMS command line client
 
-use clap::{Args, Parser, Subcommand};
-use mms::{client::*, *};
-use rustls_pki_types::{CertificateDer, PrivateKeyDer};
 use std::{
     fs::File,
     io,
@@ -10,6 +7,10 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+
+use clap::{Args, Parser, Subcommand};
+use mms::{client::*, *};
+use rustls_pki_types::{CertificateDer, PrivateKeyDer};
 
 /// Command line arguments
 #[derive(Parser)]

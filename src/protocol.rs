@@ -8,13 +8,14 @@ pub mod transport;
 
 pub(crate) mod mms; // Publically exported by lib.rs
 
-use crate::error::Error;
-use crate::messages::iso_9506_mms_1::MMSpdu;
+use std::sync::{Arc, Mutex};
+
 use bytes::{Bytes, BytesMut};
 use futures::{SinkExt, StreamExt, channel::mpsc, future};
 use log::{trace, warn};
-use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncRead, AsyncWrite};
+
+use crate::{error::Error, messages::iso_9506_mms_1::MMSpdu};
 
 pub type PDUSender = mpsc::Sender<MMSpdu>;
 pub type PDUReceiver = mpsc::Receiver<MMSpdu>;

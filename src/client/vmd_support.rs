@@ -1,9 +1,9 @@
 //! Client interface for VMD Support Protocol [ISO 9506-2:2003 Section 10]
 
-use super::Client;
-use crate::error::Error;
-use crate::messages::iso_9506_mms_1::*;
 use std::time::Duration;
+
+use super::Client;
+use crate::{error::Error, messages::iso_9506_mms_1::*};
 
 const PAGINATED_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 

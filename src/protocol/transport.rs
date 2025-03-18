@@ -3,16 +3,18 @@
 //! additional features. This implementation covers Class 0, which includes basic
 //! connection establishment, data transfer, and error reporting.
 
-use crate::error::Error;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use futures::{Sink, SinkExt, Stream, StreamExt};
-use log::trace;
-use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
 use std::{
     cmp::min,
     pin::Pin,
     task::{Context, Poll},
 };
+
+use bytes::{Buf, BufMut, Bytes, BytesMut};
+use futures::{Sink, SinkExt, Stream, StreamExt};
+use log::trace;
+use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
+
+use crate::error::Error;
 
 /// TPDU type codes (Class 0 only) [RFC-905 Section 13.2.2.2]
 #[derive(Clone, Copy, Debug, PartialEq, TryFromPrimitive)]

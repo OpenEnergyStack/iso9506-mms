@@ -27,9 +27,10 @@
 //! 65531 octets.  Based on the size of the data transfer (DT) TPDU,
 //! this permits a maximum TSDU size of 65524 octets.
 
-use crate::error::Error;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
+
+use crate::error::Error;
 
 const HEADER_VERSION: u8 = 3;
 const HEADER_LEN: usize = 4;

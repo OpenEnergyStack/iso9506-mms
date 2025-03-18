@@ -1,8 +1,10 @@
 //! Client interface for Variable Access Protocol [ISO 9506-2:2003 Section 14]
 
 use super::Client;
-use crate::error::Error;
-use crate::messages::{iso_9506_mms_1::*, mms_object_module_1::*};
+use crate::{
+    error::Error,
+    messages::{iso_9506_mms_1::*, mms_object_module_1::*},
+};
 
 impl Client {
     /// Read [ISO 9506-2:2003 Section 14.6]

@@ -1,9 +1,10 @@
 //! Minimal implemenation of ISO-8327 OSI session layer.
 //! ITU-T X.225 is referenced in the below code.
 
-use crate::error::Error;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use num_enum::{TryFromPrimitive, TryFromPrimitiveError};
+
+use crate::error::Error;
 
 /// SPDU identifiers (SI) [X.225 Section 8.3]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, TryFromPrimitive)]

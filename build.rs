@@ -1,8 +1,9 @@
 //! Build script that generates Rust bindings from ASN.1 schemas.
 //! Output is written to `messages.rs` in the build output directory (`OUT_DIR`).
 
-use rasn_compiler::prelude::*;
 use std::path::{Path, PathBuf};
+
+use rasn_compiler::prelude::*;
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Schemas to import

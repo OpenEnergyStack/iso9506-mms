@@ -3,14 +3,23 @@
 pub mod variable_access;
 pub mod vmd_support;
 
-use crate::bitstring;
-use crate::error::Error;
-use crate::messages::{iso_9506_mms_1::*, mms_object_module_1::*};
-use crate::protocol::{self, PDUReceiver, PDUSender, mms::*};
+use std::{
+    collections::HashMap,
+    io,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+
 use futures::{SinkExt, StreamExt, channel::mpsc};
 use log::{debug, error, trace, warn};
 use rand::{RngCore, SeedableRng, rngs::StdRng};
-use std::{collections::HashMap, io, sync::Arc, sync::Mutex, time::Duration};
+
+use crate::{
+    bitstring,
+    error::Error,
+    messages::{iso_9506_mms_1::*, mms_object_module_1::*},
+    protocol::{self, PDUReceiver, PDUSender, mms::*},
+};
 
 const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const DEFAULT_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
@@ -519,11 +528,12 @@ impl Drop for PendingRequest {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::messages::iso_9506_mms_1_a::*;
     use bytes::{BufMut, BytesMut};
     use rand::seq::SliceRandom;
     use rasn::types::{FixedBitString, VisibleString};
+
+    use super::*;
+    use crate::messages::iso_9506_mms_1_a::*;
 
     fn make_initiate_resp_pdu() -> MMSpdu {
         MMSpdu::initiate_ResponsePDU(InitiateResponsePDU {
