@@ -72,27 +72,27 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-	Start((Start)) --> DNS(DNS Hostname Lookup)
-	DNS --> |Found IP| TCP(TCP Connect)
-	TCP --> |No TLS| COTP(Transport Connect)
-	TCP --> |TLS| TLS(TLS Handshake)
-	TLS --> COTP
-	COTP --> MMS(MMS Initiate)
-	MMS --> Connected(Connected)
+ Start((Start)) --> DNS(DNS Hostname Lookup)
+ DNS --> |Found IP| TCP(TCP Connect)
+ TCP --> |No TLS| COTP(Transport Connect)
+ TCP --> |TLS| TLS(TLS Handshake)
+ TLS --> COTP
+ COTP --> MMS(MMS Initiate)
+ MMS --> Connected(Connected)
 ```
 
 ### Confirmed Request State Machine
 
 ```mermaid
 flowchart TD
-	Idle --> |Confirmed-Request| Pending
-	Pending --> |Confirmed-Response| Idle
-	Pending --> |Confirmed-Error| Idle
-	Pending --> |Cancel-Request| Canceling
-	Canceling --> |Cancel-Response| Idle
-	Canceling --> |Cancel-Error| Pending
-	Canceling --> |Confirmed-Error| Idle
-	Canceling --> |Confirmed-Response| Idle
+ Idle --> |Confirmed-Request| Pending
+ Pending --> |Confirmed-Response| Idle
+ Pending --> |Confirmed-Error| Idle
+ Pending --> |Cancel-Request| Canceling
+ Canceling --> |Cancel-Response| Idle
+ Canceling --> |Cancel-Error| Pending
+ Canceling --> |Confirmed-Error| Idle
+ Canceling --> |Confirmed-Response| Idle
 ```
 
 ## Server Library
@@ -101,8 +101,8 @@ TODO
 
 ## Client Command Line Tool
 
-```
-# mms-client --help
+```bash
+$ mms-client --help
 
 Usage: mms-client [OPTIONS] <HOST> <COMMAND>
 
