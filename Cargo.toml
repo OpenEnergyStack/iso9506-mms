@@ -34,6 +34,3 @@ hex.workspace = true
 
 [build-dependencies]
 rasn-compiler.workspace = true
-
-[features]
-tls = []
