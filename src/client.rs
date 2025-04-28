@@ -13,6 +13,7 @@ use std::{
 use futures::{SinkExt, StreamExt, channel::mpsc};
 use log::{debug, error, trace, warn};
 use rand::{RngCore, SeedableRng, rngs::StdRng};
+use tokio::sync::broadcast;
 
 use crate::{
     bitstring,
@@ -142,6 +143,7 @@ type RequestMap = HashMap<u32, PDUSender>;
 pub struct Client {
     sender: PDUSender,
     requests: Arc<Mutex<RequestMap>>,
+    unconfirmed: broadcast::Sender<UnconfirmedService>,
     rng: Arc<Mutex<StdRng>>,
 }
 
@@ -163,10 +165,12 @@ impl Client {
         let client = Client {
             sender,
             requests: Arc::new(Mutex::new(HashMap::new())),
+            unconfirmed: broadcast::Sender::new(CHANNEL_SIZE),
             rng: Arc::new(Mutex::new(StdRng::from_os_rng())),
         };
 
         let requests = client.requests.clone();
+        let unconfirmed = client.unconfirmed.clone();
 
         // Start a task to process incoming messages
         tokio::spawn(async move {
@@ -198,8 +202,7 @@ impl Client {
                     }
 
                     MMSpdu::unconfirmed_PDU(unconf) => {
-                        // TODO support registration of Unconfirmed message handlers
-                        warn!("dropping unhandled Unconfirmed message: {unconf:?}");
+                        let _ = unconfirmed.send(unconf.to_owned().service);
                     }
 
                     MMSpdu::rejectPDU(rej) => {
@@ -378,6 +381,26 @@ impl Client {
             pending.response().await
         })
         .await?
+    }
+
+    /// Subscribe to incoming Unconfirmed messages.
+    ///
+    /// # Example
+    /// ```
+    /// # use mms::{client::*, *};
+    /// # async fn test() -> Result<(), Error> {
+    /// let client = Client::builder().connect("localhost", 102).await?;
+    ///
+    /// let mut handler = client.handle_unconfirmed();
+    ///
+    /// while let Ok(unconf) = handler.recv().await {
+    ///     println!("received {unconf:?}");
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn handle_unconfirmed(&self) -> broadcast::Receiver<UnconfirmedService> {
+        self.unconfirmed.subscribe()
     }
 
     /// Initiate a session with the MMS server. This is a required protocol
@@ -575,7 +598,7 @@ mod tests {
         ServiceError {
             error_class: ServiceErrorErrorClass::service(0),
             additional_code: None,
-            additional_description: Some(VisibleString::from_iso646_bytes(b"the system is down").unwrap()),
+            additional_description: Some(VisibleString::try_from("the system is down").unwrap()),
             service_specific_info: None,
         }
     }
@@ -592,6 +615,16 @@ mod tests {
             invoke_id,
             modifier_position: None,
             service_error: err,
+        })
+    }
+
+    fn make_unconfirmed_pdu(status: u8) -> MMSpdu {
+        MMSpdu::unconfirmed_PDU(UnconfirmedPDU {
+            service: UnconfirmedService::unsolicitedStatus(UnsolicitedStatus(Status {
+                vmd_logical_status: status,
+                vmd_physical_status: status,
+                local_detail: None,
+            })),
         })
     }
 
@@ -898,6 +931,58 @@ mod tests {
         let pending = client.start_request(make_req(5), None).await.unwrap();
         let result = client.cancel_request(pending).await;
         assert!(matches!(result, Err(Error::BadRequest(_))));
+    }
+
+    #[tokio::test]
+    async fn unconfirmed_handler() {
+        // Channel
+        let (out_tx, mut out_rx) = futures::channel::mpsc::channel(1);
+        let (mut in_tx, in_rx) = futures::channel::mpsc::channel(1);
+        let channel = (out_tx, in_rx);
+
+        // Server
+        tokio::spawn(async move {
+            while let Some(pdu) = out_rx.next().await {
+                match pdu {
+                    MMSpdu::initiate_RequestPDU(_) => {
+                        in_tx.send(make_initiate_resp_pdu()).await.unwrap();
+
+                        // After initiate, send 3 Unconfirmed messages
+                        in_tx.send(make_unconfirmed_pdu(1)).await.unwrap();
+                        in_tx.send(make_unconfirmed_pdu(2)).await.unwrap();
+                        in_tx.send(make_unconfirmed_pdu(3)).await.unwrap();
+                    }
+
+                    _ => panic!("unexpected PDU"),
+                }
+            }
+        });
+
+        // Client
+        let client = Client::start(channel).await.unwrap();
+
+        assert!(client.is_connected());
+
+        let mut handler = client.handle_unconfirmed();
+
+        assert_eq!(
+            MMSpdu::unconfirmed_PDU(UnconfirmedPDU {
+                service: handler.recv().await.unwrap()
+            }),
+            make_unconfirmed_pdu(1)
+        );
+        assert_eq!(
+            MMSpdu::unconfirmed_PDU(UnconfirmedPDU {
+                service: handler.recv().await.unwrap()
+            }),
+            make_unconfirmed_pdu(2)
+        );
+        assert_eq!(
+            MMSpdu::unconfirmed_PDU(UnconfirmedPDU {
+                service: handler.recv().await.unwrap()
+            }),
+            make_unconfirmed_pdu(3)
+        );
     }
 
     #[tokio::test]

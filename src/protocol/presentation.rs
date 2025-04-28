@@ -31,8 +31,8 @@ impl Default for PresentationParams {
         Self {
             local_presentation_selector: None,
             remote_presentation_selector: None,
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         }
     }
 }
@@ -48,7 +48,7 @@ impl Ppdu {
 
         let ppdu = CPPPDU {
             mode_selector: ModeSelector {
-                mode_value: Integer::Primitive(1), // normal-mode(1)
+                mode_value: Integer::from(1), // normal-mode(1)
             },
             x410_mode_parameters: None,
             normal_mode_parameters: Some(CPPPDUNormalModeParameters {
@@ -152,7 +152,7 @@ impl Ppdu {
 
         let ppdu = CPAPPDU {
             mode_selector: ModeSelector {
-                mode_value: Integer::Primitive(1), // normal-mode(1)
+                mode_value: Integer::from(1), // normal-mode(1)
             },
             x410_mode_parameters: None,
             normal_mode_parameters: Some(CPAPPDUNormalModeParameters {
@@ -164,12 +164,12 @@ impl Ppdu {
                 presentation_context_definition_result_list: Some(PresentationContextDefinitionResultList(ResultList(
                     vec![
                         AnonymousResultList {
-                            result: Result(Integer::Primitive(0)), // acceptance(0)
+                            result: Result(Integer::from(0)), // acceptance(0)
                             transfer_syntax_name: Some(TransferSyntaxName(oid::BASIC_ENCODING.clone())),
                             provider_reason: None,
                         },
                         AnonymousResultList {
-                            result: Result(Integer::Primitive(0)), // acceptance(0)
+                            result: Result(Integer::from(0)), // acceptance(0)
                             transfer_syntax_name: Some(TransferSyntaxName(oid::BASIC_ENCODING.clone())),
                             provider_reason: None,
                         },
@@ -226,7 +226,7 @@ impl Ppdu {
             ));
         }
         if context_results.0.0.iter().any(
-            |r| r.result != Result(Integer::Primitive(0)), // acceptance(0)
+            |r| r.result != Result(Integer::from(0)), // acceptance(0)
         ) {
             return Err(Error::ProtocolError(
                 "Presentation: context not accepted for ACSE and/or MMS CPA-PDU".into(),
@@ -407,8 +407,8 @@ mod tests {
         let params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
 
         let user_data = hex::decode("605780020780a107060528ca220101a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
@@ -441,8 +441,8 @@ mod tests {
         let tx_params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
 
         let user_data = hex::decode("615480020780a107060528ca220101a203020100a305a103020100a40406022902a503020102be2e282c020103a027a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
@@ -460,8 +460,8 @@ mod tests {
         let rx_params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
         let apdu2 = Ppdu::decode_connect_accept(&rx_params, &mut buf).unwrap();
         assert_eq!(apdu, apdu2);
@@ -474,8 +474,8 @@ mod tests {
         let params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
 
         let user_data = hex::decode("6403800100").unwrap();
@@ -501,8 +501,8 @@ mod tests {
         let params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
 
         let user_data = hex::decode("6203800100").unwrap();
@@ -528,8 +528,8 @@ mod tests {
         let params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
             remote_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
-            acse_context_id: Integer::Primitive(1),
-            mms_context_id: Integer::Primitive(3),
+            acse_context_id: Integer::from(1),
+            mms_context_id: Integer::from(3),
         };
 
         let user_data = hex::decode("a0060202114f8200").unwrap();

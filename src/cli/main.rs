@@ -370,9 +370,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
         Commands::List(args) => {
             let scope = match args.domain {
-                Some(domain) => GetNameListRequestObjectScope::domainSpecific(Identifier(
-                    VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap(),
-                )),
+                Some(domain) => {
+                    GetNameListRequestObjectScope::domainSpecific(Identifier(VisibleString::try_from(domain)?))
+                }
                 None => GetNameListRequestObjectScope::vmdSpecific(()),
             };
 
@@ -394,12 +394,10 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 .map(|name| {
                     let object = match args.domain.as_ref() {
                         Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
-                            domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
-                            item_id: Identifier(VisibleString::from_iso646_bytes(name.as_bytes()).unwrap()),
+                            domain_id: Identifier(VisibleString::try_from(domain.as_str()).unwrap()),
+                            item_id: Identifier(VisibleString::try_from(name.as_str()).unwrap()),
                         }),
-                        None => ObjectName::vmd_specific(Identifier(
-                            VisibleString::from_iso646_bytes(name.as_bytes()).unwrap(),
-                        )),
+                        None => ObjectName::vmd_specific(Identifier(VisibleString::try_from(name.as_str()).unwrap())),
                     };
 
                     AnonymousVariableAccessSpecificationListOfVariable {
@@ -424,14 +422,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         }
 
         Commands::ReadList(args) => {
-            let object = match args.domain.as_ref() {
+            let object = match args.domain {
                 Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
-                    domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
-                    item_id: Identifier(VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap()),
+                    domain_id: Identifier(VisibleString::try_from(domain)?),
+                    item_id: Identifier(VisibleString::try_from(args.name)?),
                 }),
-                None => ObjectName::vmd_specific(Identifier(
-                    VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap(),
-                )),
+                None => ObjectName::vmd_specific(Identifier(VisibleString::try_from(args.name)?)),
             };
 
             let resp = client
@@ -444,14 +440,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         }
 
         Commands::Write(args) => {
-            let object = match args.domain.as_ref() {
+            let object = match args.domain {
                 Some(domain) => ObjectName::domain_specific(ObjectNameDomainSpecific {
-                    domain_id: Identifier(VisibleString::from_iso646_bytes(domain.as_bytes()).unwrap()),
-                    item_id: Identifier(VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap()),
+                    domain_id: Identifier(VisibleString::try_from(domain)?),
+                    item_id: Identifier(VisibleString::try_from(args.name)?),
                 }),
-                None => ObjectName::vmd_specific(Identifier(
-                    VisibleString::from_iso646_bytes(args.name.as_bytes()).unwrap(),
-                )),
+                None => ObjectName::vmd_specific(Identifier(VisibleString::try_from(args.name)?)),
             };
 
             let variable = AnonymousVariableAccessSpecificationListOfVariable {
@@ -463,14 +457,14 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let data = match args.data {
                 WriteData::Bool { val } => Data::boolean(val),
                 WriteData::BitString { val } => Data::bit_string(BitString::from_vec(val)),
-                WriteData::Integer { val } => Data::integer(Integer::Primitive(val)),
-                WriteData::Unsigned { val } => Data::unsigned(Integer::Primitive(val as isize)),
+                WriteData::Integer { val } => Data::integer(Integer::from(val)),
+                WriteData::Unsigned { val } => Data::unsigned(Integer::from(val)),
                 WriteData::Float { .. } => todo!("implement encoder for MMS floating point"),
                 WriteData::Bytes { val } => Data::octet_string(OctetString::from(val)),
-                WriteData::String { val } => Data::visible_string(VisibleString::from_iso646_bytes(val.as_bytes())?),
+                WriteData::String { val } => Data::visible_string(VisibleString::try_from(val)?),
                 WriteData::GeneralizedTime { val } => Data::generalized_time(val),
                 WriteData::BinaryTime { val } => Data::binary_time(TimeOfDay(OctetString::from(val))),
-                WriteData::BCD { val } => Data::bcd(Integer::Primitive(val)),
+                WriteData::BCD { val } => Data::bcd(Integer::from(val)),
                 WriteData::BoolArray { val } => {
                     let mut bits = BitString::new();
                     val.iter().for_each(|bit| bits.push(*bit != 0));
@@ -484,9 +478,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     )
                     .ok_or("invalid OID")?,
                 ),
-                WriteData::MMSString { val } => {
-                    Data::mMSString(MMSString(VisibleString::from_iso646_bytes(val.as_bytes())?))
-                }
+                WriteData::MMSString { val } => Data::mMSString(MMSString(VisibleString::try_from(val)?)),
             };
 
             let resp = client

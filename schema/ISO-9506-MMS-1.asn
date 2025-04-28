@@ -384,12 +384,6 @@ GetDomainAttributes-Request ::= Identifier
 
 CreateProgramInvocation-Response ::= NULL
 
-CS-CreateProgramInvocation-Request ::= INTEGER {
-   normal(0),
-   controlling(1),
-   controlled(2)
-} (0..2)
-
 DeleteProgramInvocation-Request ::= Identifier
 
 DeleteProgramInvocation-Response ::= NULL
@@ -856,52 +850,6 @@ StartCount ::= CHOICE {
    noLimit [0] IMPLICIT NULL,
    cycleCount [1] IMPLICIT INTEGER,
    stepCount [2] IMPLICIT INTEGER
-}
-
-CS-Start-Request ::= [0] CHOICE {
-   normal NULL,
-   controlling SEQUENCE {
-      startLocation [0] IMPLICIT VisibleString OPTIONAL,
-      startCount [1] StartCount OPTIONAL -- DEFAULT cycleCount: 1
-   }
-}
-
-CS-Resume-Request ::= [0] CHOICE {
-   normal NULL,
-   controlling SEQUENCE {
-      modeType CHOICE {
-         continueMode [0] IMPLICIT NULL,
-         changeMode [1] StartCount
-      }
-   }
-}
-
-CS-DefineEventCondition-Request ::= [0] CHOICE {
-   string [0] IMPLICIT VisibleString,
-   index [1] IMPLICIT INTEGER,
-   noEnhancement NULL
-}
-
-CS-AlterEventConditionMonitoring-Request ::= SEQUENCE {
-   changeDisplay CHOICE {
-      string [0] IMPLICIT VisibleString,
-      index [1] IMPLICIT INTEGER,
-      noEnhancement [2] NULL
-   } OPTIONAL
-}
-
-CS-DefineEventEnrollment-Request ::= [0] CHOICE {
-   string [0] IMPLICIT VisibleString,
-   index [1] IMPLICIT INTEGER,
-   noEnhancement NULL
-}
-
-CS-AlterEventEnrollment-Request ::= SEQUENCE {
-   changeDisplay CHOICE {
-      string [0] IMPLICIT VisibleString,
-      index [1] IMPLICIT INTEGER,
-      noEnhancement [2] NULL
-   } OPTIONAL
 }
 
 DefineEventAction-Request ::= SEQUENCE {
@@ -1662,39 +1610,6 @@ ConfirmedServiceResponse ::= CHOICE {
    exchangeData [81] IMPLICIT ExchangeData-Response
 }
 
-CS-GetProgramInvocationAttributes-Response ::= SEQUENCE {
-   errorCode [0] IMPLICIT INTEGER,
-   control [1] CHOICE {
-      controlling [0] IMPLICIT SEQUENCE {
-         controlledPI [0] IMPLICIT SEQUENCE OF Identifier,
-         programLocation [1] IMPLICIT VisibleString OPTIONAL,
-         runningMode [2] CHOICE {
-            freeRunning [0] IMPLICIT NULL,
-            cycleLimited [1] IMPLICIT INTEGER,
-            stepLimited [2] IMPLICIT INTEGER
-         }
-      },
-      controlled [1] CHOICE {
-         controllingPI [0] IMPLICIT Identifier,
-         none [1] IMPLICIT NULL
-      },
-      normal [2] IMPLICIT NULL
-   }
-}
-
-CS-GetEventConditionAttributes-Response ::= SEQUENCE {
-   groupPriorityOverride [0] CHOICE {
-      priority [0] IMPLICIT Priority,
-      undefined [1] IMPLICIT NULL
-   } OPTIONAL,
-   listOfReferencingECL [1] IMPLICIT SEQUENCE OF ObjectName OPTIONAL,
-   displayEnhancement [2] CHOICE {
-      string [0] IMPLICIT VisibleString,
-      index [1] IMPLICIT INTEGER,
-      noEnhancement [2] IMPLICIT NULL
-   }
-}
-
 Confirmed-ResponsePDU ::= SEQUENCE {
    invokeID Unsigned32,
    service ConfirmedServiceResponse
@@ -1732,17 +1647,6 @@ UnconfirmedService ::= CHOICE {
    informationReport [0] IMPLICIT InformationReport,
    unsolicitedStatus [1] IMPLICIT UnsolicitedStatus,
    eventNotification [2] IMPLICIT EventNotification
-}
-
-CS-EventNotification ::= [0] CHOICE {
-   string [0] IMPLICIT VisibleString,
-   index [1] IMPLICIT INTEGER,
-   noEnhancement NULL
-}
-
-Unconfirmed-Detail ::= CHOICE {
-   otherRequests NULL,
-   eventNotification [2] IMPLICIT CS-EventNotification
 }
 
 Unconfirmed-PDU ::= SEQUENCE {

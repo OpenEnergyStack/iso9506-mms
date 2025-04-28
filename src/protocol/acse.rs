@@ -39,7 +39,7 @@ impl Apdu {
                 oid::ISO_REGISTRATION_AUTHORITY_2.clone(),
             ))),
             called_ae_qualifier: Some(AEQualifier(ASOQualifier::aso_qualifier_form2(ASOQualifierForm2(
-                Integer::Primitive(2),
+                Integer::from(2),
             )))),
             called_ap_invocation_identifier: None,
             called_ae_invocation_identifier: None,
@@ -47,7 +47,7 @@ impl Apdu {
                 oid::ISO_REGISTRATION_AUTHORITY_1.clone(),
             ))),
             calling_ae_qualifier: Some(AEQualifier(ASOQualifier::aso_qualifier_form2(ASOQualifierForm2(
-                Integer::Primitive(1),
+                Integer::from(1),
             )))),
             calling_ap_invocation_identifier: None,
             calling_ae_invocation_identifier: None,
@@ -114,7 +114,7 @@ impl Apdu {
                 oid::ISO_REGISTRATION_AUTHORITY_2.clone(),
             ))),
             responding_ae_qualifier: Some(AEQualifier(ASOQualifier::aso_qualifier_form2(ASOQualifierForm2(
-                Integer::Primitive(2),
+                Integer::from(2),
             )))),
             responding_ap_invocation_identifier: None,
             responding_ae_invocation_identifier: None,
@@ -179,7 +179,7 @@ impl Apdu {
         use acse_1::*;
 
         let apdu = ACSEApdu::rlrq(RLRQApdu {
-            reason: Some(ReleaseRequestReason(Integer::Primitive(0))), // normal(0)
+            reason: Some(ReleaseRequestReason(Integer::from(0))), // normal(0)
             aso_qualifier: None,
             asoi_identifier: None,
             user_information: None,
@@ -207,7 +207,7 @@ impl Apdu {
         use acse_1::*;
 
         let apdu = ACSEApdu::rlre(RLREApdu {
-            reason: Some(ReleaseResponseReason(Integer::Primitive(0))), // normal(0)
+            reason: Some(ReleaseResponseReason(Integer::from(0))), // normal(0)
             aso_qualifier: None,
             asoi_identifier: None,
             user_information: None,
@@ -332,11 +332,11 @@ mod tests {
         let mpdu: iso_9506_mms_1::MMSpdu = ber::decode(&user_data).unwrap();
 
         // Pack
-        let apdu = Apdu::pack_associate_request(&Integer::Primitive(3), &mpdu).unwrap();
+        let apdu = Apdu::pack_associate_request(&Integer::from(3), &mpdu).unwrap();
         assert_eq!(expected, ber::encode(&apdu).unwrap());
 
         // Unpack
-        let mpdu2 = Apdu::unpack_associate_request(&Integer::Primitive(3), &apdu).unwrap();
+        let mpdu2 = Apdu::unpack_associate_request(&Integer::from(3), &apdu).unwrap();
         assert_eq!(mpdu, mpdu2);
     }
 
@@ -349,11 +349,11 @@ mod tests {
         let mpdu: iso_9506_mms_1::MMSpdu = ber::decode(&user_data).unwrap();
 
         // Pack
-        let apdu = Apdu::pack_associate_response(&Integer::Primitive(3), &mpdu).unwrap();
+        let apdu = Apdu::pack_associate_response(&Integer::from(3), &mpdu).unwrap();
         assert_eq!(expected, ber::encode(&apdu).unwrap());
 
         // Unpack
-        let mpdu2 = Apdu::unpack_associate_response(&Integer::Primitive(3), &apdu).unwrap();
+        let mpdu2 = Apdu::unpack_associate_response(&Integer::from(3), &apdu).unwrap();
         assert_eq!(mpdu, mpdu2);
     }
 

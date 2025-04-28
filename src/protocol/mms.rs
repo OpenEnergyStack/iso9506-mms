@@ -328,9 +328,9 @@ mod tests {
         let pdu = MMSpdu::confirmed_ResponsePDU(ConfirmedResponsePDU {
             invoke_id: Unsigned32(4431),
             service: ConfirmedServiceResponse::identify(IdentifyResponse {
-                vendor_name: MMSString(VisibleString::from_iso646_bytes(b"Verrus Inc.").unwrap()),
-                model_name: MMSString(VisibleString::from_iso646_bytes(b"Unit Test 9000").unwrap()),
-                revision: MMSString(VisibleString::from_iso646_bytes(b"1.2.3").unwrap()),
+                vendor_name: MMSString(VisibleString::try_from("Verrus Inc.").unwrap()),
+                model_name: MMSString(VisibleString::try_from("Unit Test 9000").unwrap()),
+                revision: MMSString(VisibleString::try_from("1.2.3").unwrap()),
                 list_of_abstract_syntaxes: None,
             }),
         });
@@ -358,10 +358,8 @@ mod tests {
                         AnonymousVariableAccessSpecificationListOfVariable {
                             variable_specification: VariableSpecification::name(ObjectName::domain_specific(
                                 ObjectNameDomainSpecific {
-                                    domain_id: Identifier(VisibleString::from_iso646_bytes(b"KIRKLAND").unwrap()),
-                                    item_id: Identifier(
-                                        VisibleString::from_iso646_bytes(b"Bilateral_Table_ID").unwrap(),
-                                    ),
+                                    domain_id: Identifier(VisibleString::try_from("KIRKLAND").unwrap()),
+                                    item_id: Identifier(VisibleString::try_from("Bilateral_Table_ID").unwrap()),
                                 },
                             )),
                             alternate_access: None,
@@ -390,7 +388,7 @@ mod tests {
             service: ConfirmedServiceResponse::read(ReadResponse {
                 variable_access_specification: None,
                 list_of_access_result: vec![AccessResult::success(Data::visible_string(
-                    VisibleString::from_iso646_bytes(b"1.0").unwrap(),
+                    VisibleString::try_from("1.0").unwrap(),
                 ))],
             }),
         });
@@ -415,8 +413,8 @@ mod tests {
                         AnonymousVariableAccessSpecificationListOfVariable {
                             variable_specification: VariableSpecification::name(ObjectName::domain_specific(
                                 ObjectNameDomainSpecific {
-                                    domain_id: Identifier(VisibleString::from_iso646_bytes(b"KIRKLAND").unwrap()),
-                                    item_id: Identifier(VisibleString::from_iso646_bytes(b"CITEC_TS1").unwrap()),
+                                    domain_id: Identifier(VisibleString::try_from("KIRKLAND").unwrap()),
+                                    item_id: Identifier(VisibleString::try_from("CITEC_TS1").unwrap()),
                                 },
                             )),
                             alternate_access: None,
@@ -425,21 +423,21 @@ mod tests {
                 ),
                 list_of_data: vec![Data::structure(vec![
                     Data::structure(vec![
-                        Data::unsigned(Integer::Primitive(1)),
-                        Data::visible_string(VisibleString::from_iso646_bytes(b"KIRKLAND").unwrap()),
-                        Data::visible_string(VisibleString::from_iso646_bytes(b"EMS_STATUS_ICCP_IN").unwrap()),
+                        Data::unsigned(Integer::from(1)),
+                        Data::visible_string(VisibleString::try_from("KIRKLAND").unwrap()),
+                        Data::visible_string(VisibleString::try_from("EMS_STATUS_ICCP_IN").unwrap()),
                     ]),
-                    Data::integer(Integer::Primitive(0)),
-                    Data::integer(Integer::Primitive(0)),
-                    Data::integer(Integer::Primitive(0)),
-                    Data::integer(Integer::Primitive(1)),
-                    Data::integer(Integer::Primitive(0)),
+                    Data::integer(Integer::from(0)),
+                    Data::integer(Integer::from(0)),
+                    Data::integer(Integer::from(0)),
+                    Data::integer(Integer::from(1)),
+                    Data::integer(Integer::from(0)),
                     Data::bit_string(bitvec![u8, Msb0; 0, 0, 1, 0, 0]),
                     Data::boolean(false),
                     Data::boolean(false),
                     Data::boolean(true),
                     Data::boolean(true),
-                    Data::integer(Integer::Primitive(0)),
+                    Data::integer(Integer::from(0)),
                 ])],
             }),
         });
@@ -479,7 +477,7 @@ mod tests {
             service: ConfirmedServiceRequest::getNameList(GetNameListRequest {
                 object_class: ObjectClass::basicObjectClass(2),
                 object_scope: GetNameListRequestObjectScope::domainSpecific(Identifier(
-                    VisibleString::from_iso646_bytes(b"KIRKLAND").unwrap(),
+                    VisibleString::try_from("KIRKLAND").unwrap(),
                 )),
                 continue_after: None,
             }),
@@ -500,8 +498,8 @@ mod tests {
             invoke_id: Unsigned32(4433),
             service: ConfirmedServiceResponse::getNameList(GetNameListResponse {
                 list_of_identifier: vec![
-                    Identifier(VisibleString::from_iso646_bytes(b"EMS_ANALOG_ICCP_IN").unwrap()),
-                    Identifier(VisibleString::from_iso646_bytes(b"EMS_STATUS_ICCP_IN").unwrap()),
+                    Identifier(VisibleString::try_from("EMS_ANALOG_ICCP_IN").unwrap()),
+                    Identifier(VisibleString::try_from("EMS_STATUS_ICCP_IN").unwrap()),
                 ],
                 more_follows: false,
             }),
