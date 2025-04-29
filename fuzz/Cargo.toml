@@ -12,9 +12,16 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4.9"
 bytes = "1.10.1"
 tokio = { version = "1.44.2", features = ["rt"] }
-tokio-util = "0.7.13"
+tokio-util = "0.7.15"
 futures = "0.3.31"
 mms = { path = ".." }
+
+[[bin]]
+name = "floating-point-decode"
+path = "fuzz_targets/floating-point-decode.rs"
+test = false
+doc = false
+bench = false
 
 [[bin]]
 name = "protocol-decode"
@@ -26,6 +33,13 @@ bench = false
 [[bin]]
 name = "protocol-full-ingress"
 path = "fuzz_targets/protocol-full-ingress.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "time-of-day-decode"
+path = "fuzz_targets/time-of-day-decode.rs"
 test = false
 doc = false
 bench = false

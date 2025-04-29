@@ -144,47 +144,19 @@ struct ReadListArgs {
 /// Variable Data for writing
 #[derive(Clone, Subcommand)]
 enum WriteData {
-    Bool {
-        val: bool,
-    },
-    BitString {
-        val: Vec<u8>,
-    },
-    Integer {
-        val: isize,
-    },
-    Unsigned {
-        val: usize,
-    },
-    Float {
-        val: f64,
-    },
-    Bytes {
-        val: Vec<u8>,
-    },
-    String {
-        val: String,
-    },
-    GeneralizedTime {
-        val: chrono::DateTime<chrono::FixedOffset>,
-    },
-    BinaryTime {
-        val: Vec<u8>,
-    },
-    #[allow(clippy::upper_case_acronyms)]
-    BCD {
-        val: isize,
-    },
-    BoolArray {
-        val: Vec<u8>,
-    },
-    #[allow(clippy::upper_case_acronyms)]
-    OID {
-        val: String,
-    },
-    MMSString {
-        val: String,
-    },
+    Bool { val: bool },
+    BitString { val: Vec<u8> },
+    Integer { val: isize },
+    Unsigned { val: usize },
+    Float { val: f64 },
+    Bytes { val: Vec<u8> },
+    String { val: String },
+    GeneralizedTime { val: chrono::DateTime<chrono::FixedOffset> },
+    BinaryTime { val: TimeOrDate },
+    Bcd { val: isize },
+    BoolArray { val: Vec<u8> },
+    Oid { val: String },
+    MMSString { val: String },
 }
 
 /// 'Write' arguments
@@ -234,7 +206,7 @@ fn data_type(data: &Data) -> &'static str {
         Data::floating_point(_) => "floating-point",
         Data::octet_string(_) => "octet-string",
         Data::visible_string(_) => "visible-string",
-        Data::generalized_time(_) => "generalized-string",
+        Data::generalized_time(_) => "generalized-time",
         Data::binary_time(_) => "binary-time",
         Data::bcd(_) => "bcd",
         Data::booleanArray(_) => "boolean-array",
@@ -259,11 +231,16 @@ fn print_data(data: &Data, indent: usize, annotate_types: bool) {
         Data::bit_string(val) => print!("{val}"),
         Data::integer(val) => print!("{val}"),
         Data::unsigned(val) => print!("{val}"),
-        Data::floating_point(val) => print!("{:x}", val.0), // TODO need encode/decode for MMS FloatingPoint
+        Data::floating_point(val) => print!("{}", f64::try_from(val).unwrap_or(f64::NAN)),
         Data::octet_string(val) => print!("{val:x}"),
         Data::visible_string(val) => print!("{val}"),
         Data::generalized_time(val) => print!("{val}"),
-        Data::binary_time(val) => print!("{:x}", val.0), // TODO need encode/decode for MMS TimeOfDay
+        Data::binary_time(val) => {
+            print!(
+                "{}",
+                TimeOrDate::try_from(val).unwrap_or(TimeOrDate::Time(chrono::NaiveTime::MIN))
+            );
+        }
         Data::bcd(val) => print!("{val}"),
         Data::booleanArray(val) => print!("{val}"),
         Data::objId(val) => print!("{val}"),
@@ -459,18 +436,18 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 WriteData::BitString { val } => Data::bit_string(BitString::from_vec(val)),
                 WriteData::Integer { val } => Data::integer(Integer::from(val)),
                 WriteData::Unsigned { val } => Data::unsigned(Integer::from(val)),
-                WriteData::Float { .. } => todo!("implement encoder for MMS floating point"),
+                WriteData::Float { val } => Data::floating_point(FloatingPoint::from(val)),
                 WriteData::Bytes { val } => Data::octet_string(OctetString::from(val)),
                 WriteData::String { val } => Data::visible_string(VisibleString::try_from(val)?),
                 WriteData::GeneralizedTime { val } => Data::generalized_time(val),
-                WriteData::BinaryTime { val } => Data::binary_time(TimeOfDay(OctetString::from(val))),
-                WriteData::BCD { val } => Data::bcd(Integer::from(val)),
+                WriteData::BinaryTime { val } => Data::binary_time(TimeOfDay::try_from(val)?),
+                WriteData::Bcd { val } => Data::bcd(Integer::from(val)),
                 WriteData::BoolArray { val } => {
                     let mut bits = BitString::new();
                     val.iter().for_each(|bit| bits.push(*bit != 0));
                     Data::booleanArray(bits)
                 }
-                WriteData::OID { val } => Data::objId(
+                WriteData::Oid { val } => Data::objId(
                     ObjectIdentifier::new(
                         val.split('.')
                             .map(|id| id.parse::<u32>().unwrap_or_default())
