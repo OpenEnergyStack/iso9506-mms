@@ -280,7 +280,7 @@ fn make_tls_config(cli: &Cli) -> io::Result<TLSConfig> {
     // Client config builder using the `rustls` default crypto provider
     let builder = rustls::ClientConfig::builder_with_provider(Arc::new(rustls::crypto::aws_lc_rs::default_provider()))
         .with_safe_default_protocol_versions()
-        .map_err(|err| io::Error::new(io::ErrorKind::Other, err))?;
+        .map_err(io::Error::other)?;
 
     // Load CA certs from a PEM file, if supplied, or fall-back to the system certificate store
     let builder = if let Some(ca_cert) = &cli.ca_cert {
