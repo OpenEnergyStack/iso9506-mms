@@ -658,7 +658,7 @@ fn proto_err<E>(err: TryFromPrimitiveError<E>) -> Error
 where
     E: TryFromPrimitive,
 {
-    Error::ProtocolError(format!("Session: decode: {}", err))
+    Error::ProtocolError(format!("Session: decode: {err}"))
 }
 
 #[cfg(test)]

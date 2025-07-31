@@ -544,7 +544,7 @@ where
                 end_of_transmission: (payload_len == item.remaining()),
             });
 
-            trace!("transport: send {tpdu:?}, payload {} bytes", payload_len);
+            trace!("transport: send {tpdu:?}, payload {payload_len} bytes");
 
             Tpdu::encode(&tpdu, &mut self.sink_buf)?;
             self.sink_buf.put(item.split_to(payload_len));
@@ -684,7 +684,7 @@ fn proto_err<E>(err: TryFromPrimitiveError<E>) -> Error
 where
     E: TryFromPrimitive,
 {
-    Error::ProtocolError(format!("Transport: decode: {}", err))
+    Error::ProtocolError(format!("Transport: decode: {err}"))
 }
 
 #[cfg(test)]

@@ -91,7 +91,7 @@ impl Builder {
             let addrs = net::lookup_host((host, port)).await?.collect::<Vec<_>>();
             let addr = addrs.first().ok_or(io::Error::from(io::ErrorKind::HostUnreachable))?;
 
-            trace!("found: {:?}", addrs);
+            trace!("found: {addrs:?}");
             debug!("connecting to {addr}");
 
             // Connect to TCP server
@@ -108,7 +108,7 @@ impl Builder {
 
                     let domain = ServerName::try_from(tls.domain_name.unwrap_or(host.to_string()).to_owned())?;
 
-                    debug!("performing TLS handshake, SNI: {:?}", domain);
+                    debug!("performing TLS handshake, SNI: {domain:?}");
 
                     let tokio_connector = tokio_rustls::TlsConnector::from(tls.config);
                     let stream = tokio_connector.connect(domain, stream).await?;
