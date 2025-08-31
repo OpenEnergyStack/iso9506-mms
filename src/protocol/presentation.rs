@@ -206,12 +206,11 @@ impl Ppdu {
         if let (Some(RespondingPresentationSelector(PresentationSelector(received))), Some(expected)) = (
             &params.responding_presentation_selector,
             &pp.remote_presentation_selector,
-        ) {
-            if received != expected {
-                return Err(Error::ProtocolError(format!(
-                    "Presentation: mismatched presentation selector in CPA-PDU: received {received:x}, expected {expected:x}"
-                )));
-            }
+        ) && received != expected
+        {
+            return Err(Error::ProtocolError(format!(
+                "Presentation: mismatched presentation selector in CPA-PDU: received {received:x}, expected {expected:x}"
+            )));
         }
 
         // Verify proposed ACSE and MMS presentation contexts were accepted
