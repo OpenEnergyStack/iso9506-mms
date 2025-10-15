@@ -1,6 +1,8 @@
 
 # ISO-9506 Manufacturing Message Specification (MMS) Rust Implementation
 
+[![continuous-integration](https://github.com/verrusdata/iso9506-mms/actions/workflows/ci.yaml/badge.svg)](https://github.com/verrusdata/iso9506-mms/actions/workflows/ci.yaml)
+
 ## Protocol
 
 MMS was originally developed on top of the OSI seven layer network model, then adapted for use with TCP/IP, while retaining the original Transport, Session, Presentation, and ACSE layers. Each of these layers defines its own protocol primitives, encoding, and state machine. Because these protocol layers are no longer widely used, the MMS application layer is responsible for their implementation.
