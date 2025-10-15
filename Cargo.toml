@@ -1,36 +1,36 @@
 [package]
 name = "mms"
-version.workspace = true
-edition.workspace = true
-publish.workspace = true
+version = "0.1.10"
+edition = "2024"
+publish = false
 
 [[bin]]
 name = "mms-client"
 path = "src/cli/main.rs"
 
 [dependencies]
-bitvec.workspace = true
-bytes.workspace = true
-chrono.workspace = true
-clap.workspace = true
-env_logger.workspace = true
-futures.workspace = true
-lazy_static.workspace = true
-log.workspace = true
-num_enum.workspace = true
-rand.workspace = true
-rasn.workspace = true
-rustls-pemfile.workspace = true
-rustls-pki-types.workspace = true
-rustls-platform-verifier.workspace = true
-rustls.workspace = true
-thiserror.workspace = true
-tokio-rustls.workspace = true
-tokio-util.workspace = true
-tokio.workspace = true
+bitvec = "1.0.1"
+bytes = "1.10.1"
+chrono = "0.4.40"
+clap = { version = "4.5.35", features = ["derive"] }
+env_logger = "0.11.8"
+futures = "0.3.31"
+lazy_static = "1.5.0"
+log = "0.4.26"
+num_enum = "0.7.3"
+rand = "0.9.1"
+rasn = "0.26.2"
+rustls = "0.23.23"
+rustls-pemfile = "2.2.0"
+rustls-pki-types = "1.11.0"
+rustls-platform-verifier = "0.5.0"
+thiserror = "2.0.12"
+tokio-rustls = "0.26.2"
+tokio-util = { version = "0.7.13", features = ["codec"] }
+tokio = { version = "1.44.2", features = ["full"] }
 
 [dev-dependencies]
-hex.workspace = true
+hex = "0.4.3"
 
 [build-dependencies]
-rasn-compiler.workspace = true
+rasn-compiler = "0.9.0"

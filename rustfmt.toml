@@ -1,0 +1,8 @@
+# https://rust-lang.github.io/rustfmt/?version=master&search=
+max_width = 120
+newline_style = "Unix"
+# format_code_in_doc_comments = true # Stable: No (tracking issue: #3348)
+# normalize_comments = true # Stable: No (tracking issue: #3350)
+# normalize_doc_attributes = true # Stable: No (tracking issue: #3351)
+# group_imports = "StdExternalCrate" # Stable: No (tracking issue: #5083)
+# imports_granularity = "Crate" # Stable: No (tracking issue: #4991)

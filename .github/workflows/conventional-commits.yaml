@@ -1,0 +1,17 @@
+name: conventional-commits
+on:
+  pull_request:
+    branches: [ "main" ]
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  conventional-commit-pr-title-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ytanikin/pr-conventional-commits@1.4.0
+        with:
+          task_types: '["build","chore","ci","deps","docs","feat","fix","perf","refactor","revert","test"]'
+          add_scope_label: true
