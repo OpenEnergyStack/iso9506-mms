@@ -1,7 +1,8 @@
 
 # ISO-9506 Manufacturing Message Specification (MMS) Rust Implementation
 
-[![continuous-integration](https://github.com/verrusdata/iso9506-mms/actions/workflows/ci.yaml/badge.svg)](https://github.com/verrusdata/iso9506-mms/actions/workflows/ci.yaml)
+> [!WARNING]
+> This repository is under construction. APIs, formats, and behavior may change; use with care.
 
 ## Protocol
 
