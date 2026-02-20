@@ -128,3 +128,7 @@ Options:
   -p, --port <PORT>                Server port [default: 102]
   -h, --help                       Print help
 ```
+
+## Credits
+
+This project includes contributions developed by **Verrus, LLC**.
