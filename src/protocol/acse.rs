@@ -12,7 +12,7 @@ use crate::{
 };
 
 // Version 1
-const PROTOCOL_VERSION: u8 = 0b10000000;
+const PROTOCOL_VERSION_V1_BIT: bool = true;
 
 /// Who initiated the abort [X.227 Section 7.3.4.1]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, TryFromPrimitive)]
@@ -20,6 +20,12 @@ const PROTOCOL_VERSION: u8 = 0b10000000;
 pub enum AbortSource {
     User = 0,
     Provider = 1,
+}
+
+fn protocol_version_v1() -> BitString {
+    let mut bits = BitString::new();
+    bits.push(PROTOCOL_VERSION_V1_BIT);
+    bits
 }
 
 pub struct Apdu;
@@ -33,7 +39,7 @@ impl Apdu {
         use acse_1::*;
 
         let apdu = ACSEApdu::aarq(AARQApdu {
-            protocol_version: Some(BitString::from_element(PROTOCOL_VERSION)),
+            protocol_version: Some(protocol_version_v1()), // version-1(0)
             a_so_context_name: ASOContextName(oid::MMS_APPLICATION_CONTEXT.clone()),
             called_ap_title: Some(APTitle::ap_title_form2(APTitleForm2(
                 oid::ISO_REGISTRATION_AUTHORITY_2.clone(),
@@ -106,7 +112,7 @@ impl Apdu {
         use acse_1::*;
 
         let apdu = ACSEApdu::aare(AAREApdu {
-            protocol_version: Some(BitString::from_element(0b10000000)), // version1(0)
+            protocol_version: Some(protocol_version_v1()), // version1(0)
             a_so_context_name: ASOContextName(oid::MMS_APPLICATION_CONTEXT.clone()),
             result: acse_1::AssociateResult(0), // accepted(0)
             result_source_diagnostic: acse_1::AssociateSourceDiagnostic::acse_service_user(0), // null(0)
@@ -325,7 +331,7 @@ mod tests {
 
     #[test]
     fn associate_request() {
-        let expected = hex::decode("605780020080a107060528ca220205a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
+        let expected = hex::decode("605780020780a107060528ca220205a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
 
         let user_data =
             hex::decode("a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
@@ -342,7 +348,7 @@ mod tests {
 
     #[test]
     fn associate_response() {
-        let expected = hex::decode("615880020080a107060528ca220205a203020100a305a103020100a40406022902a503020102be32283006025101020103a027a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
+        let expected = hex::decode("615880020780a107060528ca220205a203020100a305a103020100a40406022902a503020102be32283006025101020103a027a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
 
         let user_data =
             hex::decode("a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();

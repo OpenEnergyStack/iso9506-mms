@@ -12,7 +12,7 @@ use crate::{
 };
 
 // Version 1
-const PROTOCOL_VERSION: u8 = 0b10000000;
+const PROTOCOL_VERSION_V1_BIT: bool = true;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PresentationParams {
@@ -37,6 +37,12 @@ impl Default for PresentationParams {
     }
 }
 
+fn protocol_version_v1() -> BitString {
+    let mut bits = BitString::new();
+    bits.push(PROTOCOL_VERSION_V1_BIT);
+    bits
+}
+
 pub struct Ppdu;
 
 impl Ppdu {
@@ -52,7 +58,7 @@ impl Ppdu {
             },
             x410_mode_parameters: None,
             normal_mode_parameters: Some(CPPPDUNormalModeParameters {
-                protocol_version: Some(ProtocolVersion(BitString::from_element(PROTOCOL_VERSION))),
+                protocol_version: Some(ProtocolVersion(protocol_version_v1())),
                 calling_presentation_selector: pp
                     .local_presentation_selector
                     .as_ref()
@@ -156,7 +162,7 @@ impl Ppdu {
             },
             x410_mode_parameters: None,
             normal_mode_parameters: Some(CPAPPDUNormalModeParameters {
-                protocol_version: Some(ProtocolVersion(BitString::from_element(PROTOCOL_VERSION))), // version-1(0)
+                protocol_version: Some(ProtocolVersion(protocol_version_v1())), // version-1(0)
                 responding_presentation_selector: pp
                     .local_presentation_selector
                     .as_ref()
@@ -401,7 +407,7 @@ mod tests {
 
     #[test]
     fn connect() {
-        let expected = hex::decode("3181a3a003800101a2819b80020080810400000001820400000002a423300f0201010604520100013004060251013010020103060528ca220201300406025101880200006160305e020101a059605780020780a107060528ca220101a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
+        let expected = hex::decode("3181a3a003800101a2819b80020780810400000001820400000002a423300f0201010604520100013004060251013010020103060528ca220201300406025101880200006160305e020101a059605780020780a107060528ca220101a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
 
         let params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 1])),
@@ -435,7 +441,7 @@ mod tests {
 
     #[test]
     fn connect_accept() {
-        let expected = hex::decode("318184a003800101a27d80020080830400000002a512300780010081025101300780010081025101615d305b020101a056615480020780a107060528ca220101a203020100a305a103020100a40406022902a503020102be2e282c020103a027a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
+        let expected = hex::decode("318184a003800101a27d80020780830400000002a512300780010081025101300780010081025101615d305b020101a056615480020780a107060528ca220101a203020100a305a103020100a40406022902a503020102be2e282c020103a027a92580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
 
         let tx_params = PresentationParams {
             local_presentation_selector: Some(OctetString::from_static(&[0, 0, 0, 2])),
