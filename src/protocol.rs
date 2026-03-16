@@ -40,7 +40,7 @@ pub fn encode(mpdu: &MMSpdu, pp: &ProtocolParams) -> Result<Bytes, Error> {
             let mut session_data = BytesMut::new();
 
             // Encode ISO-8650 ACSE layer
-            let apdu = acse::Apdu::pack_associate_request(&pp.presentation.acse_context_id, mpdu)?;
+            let apdu = acse::Apdu::pack_associate_request(&pp.presentation.mms_context_id, mpdu)?;
 
             trace!(
                 "acse: encode associate request (AARQ), user-data context {} (ACSE)",
@@ -74,7 +74,7 @@ pub fn encode(mpdu: &MMSpdu, pp: &ProtocolParams) -> Result<Bytes, Error> {
             let mut session_data = BytesMut::new();
 
             // Encode ISO-8650 ACSE layer
-            let apdu = acse::Apdu::pack_associate_response(&pp.presentation.acse_context_id, mpdu)?;
+            let apdu = acse::Apdu::pack_associate_response(&pp.presentation.mms_context_id, mpdu)?;
 
             trace!(
                 "acse: encode associate response (AARE), user-data context {} (ACSE)",
@@ -157,7 +157,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
             );
 
             // Decode ISO-8650 ACSE layer
-            let mpdu = acse::Apdu::unpack_associate_request(&pp.presentation.acse_context_id, &apdu)?;
+            let mpdu = acse::Apdu::unpack_associate_request(&pp.presentation.mms_context_id, &apdu)?;
 
             trace!(
                 "acse: decoded associate request (AARQ), user-data context {} (ACSE)",
@@ -191,7 +191,7 @@ pub fn decode(mut buf: Bytes, pp: &mut ProtocolParams) -> Result<MMSpdu, Error> 
             );
 
             // Decode ISO-8650 ACSE layer
-            let mpdu = acse::Apdu::unpack_associate_response(&pp.presentation.acse_context_id, &apdu)?;
+            let mpdu = acse::Apdu::unpack_associate_response(&pp.presentation.mms_context_id, &apdu)?;
 
             trace!(
                 "acse: decoded associate response (AARE), user-data context {} (ACSE)",
@@ -346,4 +346,63 @@ where
 
     // Return (out_tx, in_rx) pair so that the consumer can send and receive messages
     Ok((out_tx, in_rx))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encode_data_transfer_default_params() {
+        let params = ProtocolParams::default();
+        let expected = hex::decode("01000100610f300d020103a008a0060202114f8200").unwrap();
+
+        let mpdu: MMSpdu = rasn::ber::decode(&hex::decode("a0060202114f8200").unwrap()).unwrap();
+
+        let encoded = encode(&mpdu, &params).unwrap();
+        assert_eq!(expected, encoded.to_vec());
+    }
+
+    #[test]
+    fn decode_data_transfer_default_params() {
+        let encoded = Bytes::from(hex::decode("01000100610f300d020103a008a0060202114f8200").unwrap());
+        let expected: MMSpdu = rasn::ber::decode(&hex::decode("a0060202114f8200").unwrap()).unwrap();
+
+        let mut decode_params = ProtocolParams::default();
+        let decoded = decode(encoded, &mut decode_params).unwrap();
+        assert_eq!(expected, decoded);
+    }
+
+    #[test]
+    fn encode_associate_request_default_params() {
+        let params = ProtocolParams::default();
+        let expected = hex::decode("0da014020002c19a318197a003800101a2818f80020780a423300f0201010604520100013004060251013010020103060528ca220201300406025101880200006160305e020101a059605780020780a107060528ca220205a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap();
+
+        let mpdu: MMSpdu = rasn::ber::decode(
+            &hex::decode("a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap(),
+        )
+        .unwrap();
+
+        let encoded = encode(&mpdu, &params).unwrap();
+        assert_eq!(expected, encoded.to_vec());
+    }
+
+    #[test]
+    fn decode_associate_request_default_params() {
+        let encoded = Bytes::from(hex::decode("0da014020002c19a318197a003800101a2818f80020780a423300f0201010604520100013004060251013010020103060528ca220201300406025101880200006160305e020101a059605780020780a107060528ca220205a20406022902a303020102a60406022901a703020101be32283006025101020103a027a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap());
+        let expected: MMSpdu = rasn::ber::decode(
+            &hex::decode("a82580027d00810114820114830104a416800101810305fb00820c036e1d000000000064000198").unwrap(),
+        )
+        .unwrap();
+
+        let mut decode_params = ProtocolParams::default();
+        let decoded = decode(encoded, &mut decode_params).unwrap();
+        assert_eq!(expected, decoded);
+
+        assert_eq!(
+            decode_params.presentation.acse_context_id,
+            rasn::types::Integer::from(1)
+        );
+        assert_eq!(decode_params.presentation.mms_context_id, rasn::types::Integer::from(3));
+    }
 }
