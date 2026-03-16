@@ -81,6 +81,8 @@ MMS255String ::= VisibleString (SIZE (1..255))
 
 TimeOfDay ::= OCTET STRING (SIZE (4 | 6))
 
+UtcTime ::= OCTET STRING (SIZE (8))
+
 Identifier ::= VisibleString (SIZE (1..maxIdentifier))
 
 ObjectName ::= CHOICE {
@@ -131,6 +133,7 @@ Data ::= CHOICE {
    objId [15] IMPLICIT OBJECT IDENTIFIER,
    ...,
    mMSString [16] IMPLICIT MMSString
+   utc-time [17] IMPLICIT UtcTime --UTC Time for mapping to IEC 61850 Timestamp
 }
 
 Start-Error ::= ProgramInvocationState

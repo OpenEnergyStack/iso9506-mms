@@ -290,7 +290,8 @@ TypeDescription ::= CHOICE {
    bcd [13] IMPLICIT Unsigned8,
    objId [15] IMPLICIT NULL,
    ...,
-   mMSString [16] Integer32
+   mMSString [16] Integer32,
+   utc-time [17] IMPLICIT NULL --UTC Time for mapping to IEC 61850 Timestamp
 }
 
 EventTime ::= CHOICE {
